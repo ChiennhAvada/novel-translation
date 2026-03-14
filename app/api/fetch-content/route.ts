@@ -1,6 +1,13 @@
 import puppeteer from "puppeteer";
 
-const SITE_SELECTORS: Record<string, { wait: string; content: string }> = {
+interface SiteConfig {
+  wait: string;
+  content: string;
+  lang?: "vi" | "zh";
+  extract?: string; // custom JS to run for content extraction
+}
+
+const SITE_SELECTORS: Record<string, SiteConfig> = {
   "tangthuvien.net": {
     wait: 'div[class*="box-chap"]',
     content: 'div[class*="box-chap box-chap-"]',
@@ -13,7 +20,27 @@ const SITE_SELECTORS: Record<string, { wait: string; content: string }> = {
     wait: "#chapter-content",
     content: "#chapter-content",
   },
+  "69shuba": {
+    wait: "div.txtnav",
+    content: "div.txtnav",
+    lang: "zh",
+  },
+  "69shu": {
+    wait: "div.txtnav",
+    content: "div.txtnav",
+    lang: "zh",
+  },
 };
+
+function rewriteUrl(url: string): string {
+  // 69shuba.tw has unbypassable CAPTCHA — reject it
+  if (url.includes("69shuba.tw")) {
+    throw new Error(
+      "69shuba.tw is blocked by CAPTCHA. Use 69shuba.com instead (same novels, e.g. https://www.69shuba.com/book/NOVEL_ID.htm)"
+    );
+  }
+  return url;
+}
 
 function getSiteConfig(url: string) {
   for (const [domain, config] of Object.entries(SITE_SELECTORS)) {
@@ -39,6 +66,8 @@ export async function POST(req: Request) {
       );
     }
 
+    const fetchUrl = rewriteUrl(url);
+
     const browser = await puppeteer.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -51,12 +80,19 @@ export async function POST(req: Request) {
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
       );
 
-      await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
+      await page.goto(fetchUrl, { waitUntil: "networkidle2", timeout: 30000 });
 
       await page.waitForSelector(siteConfig.wait, { timeout: 10000 });
 
-      const result = await page.evaluate((selector: string) => {
+      const result = await page.evaluate((selector: string, lang: string) => {
         const el = document.querySelector(selector);
+
+        // For 69shu: remove non-content elements inside txtnav
+        if (lang === "zh" && el) {
+          const toRemove = el.querySelectorAll("h1, div.txtinfo, div#txtright, script, .ad, .ads");
+          toRemove.forEach((e) => e.remove());
+        }
+
         const text = el?.textContent ?? "";
 
         // Extract prev/next navigation links
@@ -74,8 +110,8 @@ export async function POST(req: Request) {
           const allLinks = document.querySelectorAll("a");
           for (const link of allLinks) {
             const linkText = link.textContent?.trim() ?? "";
-            if (!prevUrl && linkText === "Chương trước") prevUrl = link.href;
-            if (!nextUrl && (linkText === "Tiếp theo" || linkText === "Chương sau")) nextUrl = link.href;
+            if (!prevUrl && (linkText === "Chương trước" || linkText === "上一章")) prevUrl = link.href;
+            if (!nextUrl && (linkText === "Tiếp theo" || linkText === "Chương sau" || linkText === "下一章")) nextUrl = link.href;
           }
         }
 
@@ -88,13 +124,13 @@ export async function POST(req: Request) {
         }
 
         // Extract title
-        const title =
+        const rawTitle =
           document.querySelector("h1")?.textContent?.trim() ||
           document.querySelector("title")?.textContent?.trim() ||
           "";
 
-        return { text, prevUrl, nextUrl, title };
-      }, siteConfig.content);
+        return { text, prevUrl, nextUrl, title: rawTitle };
+      }, siteConfig.content, siteConfig.lang || "vi");
 
       if (!result.text.trim()) {
         return Response.json(
@@ -109,11 +145,32 @@ export async function POST(req: Request) {
         .replace(/\n{3,}/g, "\n\n")
         .trim();
 
+      // Parse title: 69shuba format is "Novel - Chapter - Website"
+      let novelName = "";
+      let chapterName = "";
+      const titleStr = result.title || "";
+
+      if (siteConfig.lang === "zh") {
+        const parts = titleStr.split(" - ");
+        if (parts.length >= 3) {
+          novelName = parts[0].trim();
+          chapterName = parts[1].trim();
+        } else if (parts.length === 2) {
+          novelName = parts[0].trim();
+          chapterName = parts[1].trim();
+        } else {
+          chapterName = titleStr;
+        }
+      }
+
       return Response.json({
         text: cleaned,
         prevUrl: result.prevUrl,
         nextUrl: result.nextUrl,
-        title: result.title,
+        title: titleStr,
+        novelName,
+        chapterName,
+        lang: siteConfig.lang || "vi",
       });
     } finally {
       await browser.close();

@@ -2,8 +2,14 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Vietnamese Simplifier",
-  description: "Make Vietnamese text easier to read",
+  title: "Novel Translator",
+  description: "Translate and simplify novels for easy reading",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({

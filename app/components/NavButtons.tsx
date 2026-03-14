@@ -20,7 +20,7 @@ export default function NavButtons({
       <button
         onClick={() => prevUrl && onNavigate(prevUrl)}
         disabled={!prevUrl || disabled}
-        className="px-4 py-2 rounded-lg text-sm font-medium border transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+        className="px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium border transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
         style={{ borderColor: textColor + "30", color: textColor }}
       >
         ← Previous
@@ -28,7 +28,7 @@ export default function NavButtons({
       <button
         onClick={() => nextUrl && onNavigate(nextUrl)}
         disabled={!nextUrl || disabled}
-        className="px-4 py-2 rounded-lg text-sm font-medium border transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+        className="px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium border transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
         style={{ borderColor: textColor + "30", color: textColor }}
       >
         Next →
