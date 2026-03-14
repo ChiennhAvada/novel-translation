@@ -78,7 +78,23 @@ function extractTitle($: cheerio.CheerioAPI): string {
 
 async function fetchWithCheerio(fetchUrl: string, siteConfig: SiteConfig) {
   const res = await fetch(fetchUrl, {
-    headers: { "User-Agent": USER_AGENT },
+    headers: {
+      "User-Agent": USER_AGENT,
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,vi;q=0.6",
+      "Accept-Encoding": "gzip, deflate, br",
+      "Cache-Control": "no-cache",
+      "Connection": "keep-alive",
+      "Upgrade-Insecure-Requests": "1",
+      "Sec-Fetch-Dest": "document",
+      "Sec-Fetch-Mode": "navigate",
+      "Sec-Fetch-Site": "none",
+      "Sec-Fetch-User": "?1",
+      "Sec-Ch-Ua": '"Chromium";v="120", "Not_A Brand";v="8"',
+      "Sec-Ch-Ua-Mobile": "?0",
+      "Sec-Ch-Ua-Platform": '"macOS"',
+      "Referer": new URL(fetchUrl).origin + "/",
+    },
   });
 
   if (!res.ok) {
