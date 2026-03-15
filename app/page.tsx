@@ -33,10 +33,10 @@ export default function Home() {
   const [savedChapters, setSavedChapters] = useState<SavedChapter[]>([]);
   const [activePanel, setActivePanel] = useState<Panel>("none");
   const [settings, setSettings] = useState<ReaderSettings>({
-    bgColor: "#f5f5dc",
+    bgColor: "#1a1a2e",
     fontSize: 18,
     lineSpacing: 1.8,
-    autoLineBreak: false,
+    autoLineBreak: true,
     apiKey: "",
     aiModel: "gpt-4o",
   });

@@ -164,6 +164,14 @@ export default function SettingsPanel({ settings, textColor, onUpdate }: Props) 
             </span>
           </label>
         </div>
+        <div>
+          <p className="text-sm font-medium mb-1">Supported websites</p>
+          <ul className="text-xs space-y-0.5" style={{ color: textColor + "70" }}>
+            <li>
+              <a href="https://www.quanben.io" target="_blank" rel="noopener noreferrer" className="underline cursor-pointer hover:opacity-70">quanben.io</a> (Chinese novels)
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   );

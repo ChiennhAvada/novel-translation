@@ -5,10 +5,10 @@ const CURRENT_KEY = "novel-translator-current";
 const SETTINGS_KEY = "novel-translator-settings";
 
 const DEFAULT_SETTINGS: ReaderSettings = {
-  bgColor: "#f5f5dc",
+  bgColor: "#1a1a2e",
   fontSize: 18,
   lineSpacing: 1.8,
-  autoLineBreak: false,
+  autoLineBreak: true,
   apiKey: "",
   aiModel: "gpt-4o",
 };
