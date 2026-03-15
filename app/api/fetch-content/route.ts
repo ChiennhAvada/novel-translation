@@ -117,14 +117,35 @@ async function fetchWithCheerio(url: string): Promise<string | null> {
 }
 
 async function fetchWithPuppeteer(url: string, contentSelector: string): Promise<string> {
-  const puppeteer = await import("puppeteer");
+  const puppeteer = await import("puppeteer-core");
+  const isDev = process.env.NODE_ENV === "development";
+
+  let executablePath: string;
+  let args: string[];
+
+  if (isDev) {
+    // Local: use installed Chrome
+    const possiblePaths = [
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+      "/usr/bin/google-chrome",
+      "/usr/bin/chromium-browser",
+      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    ];
+    executablePath = possiblePaths.find((p) => {
+      try { require("fs").accessSync(p); return true; } catch { return false; }
+    }) || possiblePaths[0];
+    args = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-blink-features=AutomationControlled"];
+  } else {
+    // Production (Vercel): use @sparticuz/chromium
+    const chromium = await import("@sparticuz/chromium");
+    executablePath = await chromium.default.executablePath();
+    args = chromium.default.args;
+  }
+
   const browser = await puppeteer.default.launch({
+    args,
+    executablePath,
     headless: true,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-blink-features=AutomationControlled",
-    ],
   });
 
   try {

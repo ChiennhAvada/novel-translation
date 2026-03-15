@@ -5,21 +5,21 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "start": "next start",
-    "postinstall": "npx puppeteer browsers install"
+    "start": "next start"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@sparticuz/chromium": "^143.0.4",
     "@tailwindcss/postcss": "^4.2.1",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
     "cheerio": "^1.2.0",
     "next": "^16.1.6",
     "postcss": "^8.5.8",
-    "puppeteer": "^24.39.1",
+    "puppeteer-core": "^24.39.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "tailwindcss": "^4.2.1",
