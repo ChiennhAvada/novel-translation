@@ -17,6 +17,7 @@ import SettingsPanel from "./components/SettingsPanel";
 import SavedChaptersList from "./components/SavedChaptersList";
 import SavedNovelsList from "./components/SavedNovelsList";
 import NavButtons from "./components/NavButtons";
+import { getTranslations } from "./lib/i18n";
 
 type Panel = "none" | "chapters" | "novels" | "settings";
 
@@ -39,8 +40,10 @@ export default function Home() {
     autoLineBreak: true,
     apiKey: "",
     aiModel: "gpt-4o",
+    appLang: "vi",
   });
   const abortRef = useRef<AbortController | null>(null);
+  const t = getTranslations(settings.appLang);
 
   const currentNovelSlug = url ? extractNovelSlug(url) : null;
 
@@ -230,10 +233,10 @@ export default function Home() {
 
   const isLoading = fetching || simplifying;
   const buttonLabel = fetching
-    ? "Fetching..."
+    ? t.fetching
     : simplifying
-      ? "Simplifying..."
-      : "Translate";
+      ? t.simplifying
+      : t.translate;
   const textColor = getTextColor(settings.bgColor);
   const btnStyle = { borderColor: textColor + "30", color: textColor, backgroundColor: settings.bgColor };
   const btnClass = "px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors cursor-pointer hover:opacity-70";
@@ -245,7 +248,7 @@ export default function Home() {
     >
       <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-          <h1 className="text-lg sm:text-xl font-bold">Novel Translator</h1>
+          <h1 className="text-lg sm:text-xl font-bold">{t.appTitle}</h1>
           <div className="flex gap-1.5 sm:gap-2">
             <button
               onClick={() => togglePanel("chapters")}
@@ -253,27 +256,27 @@ export default function Home() {
               className={btnClass + " text-xs sm:text-sm disabled:opacity-30 disabled:cursor-not-allowed"}
               style={btnStyle}
             >
-              Chapters ({currentNovelChapters.length})
+              {t.chapters} ({currentNovelChapters.length})
             </button>
             <button
               onClick={() => togglePanel("novels")}
               className={btnClass + " text-xs sm:text-sm"}
               style={btnStyle}
             >
-              Novels
+              {t.novels}
             </button>
             <button
               onClick={() => togglePanel("settings")}
               className={btnClass + " text-xs sm:text-sm"}
               style={btnStyle}
             >
-              Settings
+              {t.settings}
             </button>
           </div>
         </div>
 
         {activePanel === "settings" && (
-          <SettingsPanel settings={settings} textColor={textColor} onUpdate={updateSettings} />
+          <SettingsPanel settings={settings} textColor={textColor} t={t} onUpdate={updateSettings} />
         )}
 
         {activePanel === "novels" && (
@@ -282,6 +285,7 @@ export default function Home() {
             settings={settings}
             textColor={textColor}
             currentNovelSlug={currentNovelSlug}
+            t={t}
             onSelectNovel={handleSelectNovel}
             onClearNovel={handleClearNovel}
           />
@@ -292,6 +296,7 @@ export default function Home() {
             chapters={currentNovelChapters}
             settings={settings}
             textColor={textColor}
+            t={t}
             onLoad={loadSavedChapter}
           />
         )}
@@ -302,7 +307,7 @@ export default function Home() {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Paste chapter link..."
+            placeholder={t.pastePlaceholder}
             className="flex-1 px-3 sm:px-4 py-2.5 rounded-lg border text-sm min-w-0"
             style={{ backgroundColor: settings.bgColor, borderColor: textColor + "30", color: textColor }}
           />
@@ -329,18 +334,18 @@ export default function Home() {
           </div>
         )}
 
-        <NavButtons prevUrl={prevUrl} nextUrl={nextUrl} disabled={isLoading || !settings.apiKey?.trim()} textColor={textColor} onNavigate={navigateToChapter} />
+        <NavButtons prevUrl={prevUrl} nextUrl={nextUrl} disabled={isLoading || !settings.apiKey?.trim()} textColor={textColor} prevLabel={t.previous} nextLabel={t.next} onNavigate={navigateToChapter} />
 
         <div
           className="min-h-[60vh] px-1 sm:px-2 py-4 whitespace-pre-wrap"
           style={{ fontSize: `${settings.fontSize}px`, lineHeight: settings.lineSpacing }}
         >
           {simplifiedText || (
-            <span style={{ color: textColor + "40" }}>Content will appear here...</span>
+            <span style={{ color: textColor + "40" }}>{t.contentPlaceholder}</span>
           )}
         </div>
 
-        <NavButtons prevUrl={prevUrl} nextUrl={nextUrl} disabled={isLoading || !settings.apiKey?.trim()} textColor={textColor} onNavigate={navigateToChapter} />
+        <NavButtons prevUrl={prevUrl} nextUrl={nextUrl} disabled={isLoading || !settings.apiKey?.trim()} textColor={textColor} prevLabel={t.previous} nextLabel={t.next} onNavigate={navigateToChapter} />
       </div>
     </main>
   );

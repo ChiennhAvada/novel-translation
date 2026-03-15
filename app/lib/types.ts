@@ -64,6 +64,7 @@ export interface ReaderSettings {
   autoLineBreak: boolean;
   apiKey: string;
   aiModel: string;
+  appLang: "en" | "vi";
 }
 
 export const BG_OPTIONS = [

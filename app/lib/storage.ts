@@ -11,6 +11,7 @@ const DEFAULT_SETTINGS: ReaderSettings = {
   autoLineBreak: true,
   apiKey: "",
   aiModel: "gpt-4o",
+  appLang: "vi",
 };
 
 // Extract novel slug from URL
@@ -104,7 +105,8 @@ export function setCurrentUrl(url: string) {
 
 export function getSettings(): ReaderSettings {
   try {
-    return JSON.parse(localStorage.getItem(SETTINGS_KEY) || "null") ?? DEFAULT_SETTINGS;
+    const stored = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "null");
+    return stored ? { ...DEFAULT_SETTINGS, ...stored } : DEFAULT_SETTINGS;
   } catch {
     return DEFAULT_SETTINGS;
   }

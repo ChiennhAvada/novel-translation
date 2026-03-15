@@ -1,6 +1,7 @@
 "use client";
 
 import { SavedChapter, ReaderSettings } from "../lib/types";
+import { Translations } from "../lib/i18n";
 
 interface NovelInfo {
   slug: string;
@@ -14,6 +15,7 @@ interface Props {
   settings: ReaderSettings;
   textColor: string;
   currentNovelSlug: string | null;
+  t: Translations;
   onSelectNovel: (slug: string) => void;
   onClearNovel: (slug: string) => void;
 }
@@ -43,6 +45,7 @@ export default function SavedNovelsList({
   settings,
   textColor,
   currentNovelSlug,
+  t,
   onSelectNovel,
   onClearNovel,
 }: Props) {
@@ -59,7 +62,7 @@ export default function SavedNovelsList({
             className="p-4 text-center text-sm"
             style={{ color: textColor + "60" }}
           >
-            No saved novels
+            {t.noNovels}
           </p>
         ) : (
           novels.map((novel) => (
@@ -80,14 +83,14 @@ export default function SavedNovelsList({
               >
                 <p className="text-sm font-medium">{novel.name}</p>
                 <p className="text-xs" style={{ color: textColor + "60" }}>
-                  {novel.chapterCount} chapters
+                  {novel.chapterCount} {t.chapters.toLowerCase()}
                 </p>
               </button>
               <button
                 onClick={() => onClearNovel(novel.slug)}
                 className="text-xs text-red-500 hover:text-red-700 cursor-pointer transition-colors"
               >
-                Clear
+                {t.clear}
               </button>
             </div>
           ))

@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { SavedChapter, ReaderSettings } from "../lib/types";
 import { extractChapterNumber } from "../lib/storage";
+import { Translations } from "../lib/i18n";
 
 interface Props {
   chapters: SavedChapter[];
   settings: ReaderSettings;
   textColor: string;
+  t: Translations;
   onLoad: (chapter: SavedChapter) => void;
 }
 
@@ -15,6 +17,7 @@ export default function SavedChaptersList({
   chapters,
   settings,
   textColor,
+  t,
   onLoad,
 }: Props) {
   const [search, setSearch] = useState("");
@@ -43,7 +46,7 @@ export default function SavedChaptersList({
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by chapter number..."
+          placeholder={t.searchChapter}
           className="w-full px-3 py-2 rounded border text-sm"
           style={{
             backgroundColor: settings.bgColor,
@@ -58,7 +61,7 @@ export default function SavedChaptersList({
             className="p-4 text-center text-sm"
             style={{ color: textColor + "60" }}
           >
-            No chapters found
+            {t.noChapters}
           </p>
         ) : (
           filtered.map((ch) => (

@@ -1,14 +1,16 @@
 "use client";
 
 import { ReaderSettings, BG_OPTIONS, AI_MODEL_OPTIONS } from "../lib/types";
+import { Translations } from "../lib/i18n";
 
 interface Props {
   settings: ReaderSettings;
   textColor: string;
+  t: Translations;
   onUpdate: (patch: Partial<ReaderSettings>) => void;
 }
 
-export default function SettingsPanel({ settings, textColor, onUpdate }: Props) {
+export default function SettingsPanel({ settings, textColor, t, onUpdate }: Props) {
   const inputStyle = {
     backgroundColor: "transparent",
     borderColor: textColor + "30",
@@ -22,7 +24,20 @@ export default function SettingsPanel({ settings, textColor, onUpdate }: Props) 
     >
       <div className="flex flex-col gap-4">
         <div>
-          <label className="text-sm font-medium block mb-2">AI Model</label>
+          <label className="text-sm font-medium block mb-2">{t.language}</label>
+          <select
+            value={settings.appLang}
+            onChange={(e) => onUpdate({ appLang: e.target.value as "en" | "vi" })}
+            className="w-full px-3 py-2 rounded border text-sm"
+            style={inputStyle}
+          >
+            <option value="en">English</option>
+            <option value="vi">Tiếng Việt</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium block mb-2">{t.aiModel}</label>
           <select
             value={settings.aiModel}
             onChange={(e) => onUpdate({ aiModel: e.target.value })}
@@ -42,22 +57,22 @@ export default function SettingsPanel({ settings, textColor, onUpdate }: Props) 
         </div>
 
         <div>
-          <label className="text-sm font-medium block mb-2">API Key</label>
+          <label className="text-sm font-medium block mb-2">{t.apiKey}</label>
           <input
             type="password"
             value={settings.apiKey}
             onChange={(e) => onUpdate({ apiKey: e.target.value })}
-            placeholder="Enter your API key..."
+            placeholder={t.apiKeyPlaceholder}
             className="w-full px-3 py-2 rounded border text-sm"
             style={inputStyle}
           />
           <p className="text-xs mt-1" style={{ color: textColor + "50" }}>
-            Key is stored locally in your browser only.
+            {t.apiKeyNote}
           </p>
         </div>
 
         <div>
-          <label className="text-sm font-medium block mb-2">Background</label>
+          <label className="text-sm font-medium block mb-2">{t.background}</label>
           <div className="flex flex-wrap gap-2">
             {BG_OPTIONS.map((opt) => (
               <button
@@ -79,7 +94,7 @@ export default function SettingsPanel({ settings, textColor, onUpdate }: Props) 
 
         <div>
           <label className="text-sm font-medium block mb-2">
-            Font size: {settings.fontSize}px
+            {t.fontSize}: {settings.fontSize}px
           </label>
           <div className="flex items-center gap-3">
             <button
@@ -116,7 +131,7 @@ export default function SettingsPanel({ settings, textColor, onUpdate }: Props) 
 
         <div>
           <label className="text-sm font-medium block mb-2">
-            Line spacing: {settings.lineSpacing}
+            {t.lineSpacing}: {settings.lineSpacing}
           </label>
           <div className="flex items-center gap-3">
             <button
@@ -159,13 +174,12 @@ export default function SettingsPanel({ settings, textColor, onUpdate }: Props) 
               onChange={(e) => onUpdate({ autoLineBreak: e.target.checked })}
               className="w-4 h-4 cursor-pointer"
             />
-            <span className="text-sm font-medium">
-              Auto paragraph breaks (AI detects where to break lines)
-            </span>
+            <span className="text-sm font-medium">{t.autoLineBreak}</span>
           </label>
         </div>
+
         <div>
-          <p className="text-sm font-medium mb-1">Supported websites</p>
+          <p className="text-sm font-medium mb-1">{t.supportedSites}</p>
           <ul className="text-xs space-y-0.5" style={{ color: textColor + "70" }}>
             <li>
               <a href="https://www.quanben.io" target="_blank" rel="noopener noreferrer" className="underline cursor-pointer hover:opacity-70">quanben.io</a> (Chinese novels)

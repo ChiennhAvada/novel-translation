@@ -5,6 +5,8 @@ interface Props {
   nextUrl: string | null;
   disabled: boolean;
   textColor: string;
+  prevLabel: string;
+  nextLabel: string;
   onNavigate: (url: string) => void;
 }
 
@@ -13,6 +15,8 @@ export default function NavButtons({
   nextUrl,
   disabled,
   textColor,
+  prevLabel,
+  nextLabel,
   onNavigate,
 }: Props) {
   return (
@@ -23,7 +27,7 @@ export default function NavButtons({
         className="px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium border transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
         style={{ borderColor: textColor + "30", color: textColor }}
       >
-        ← Previous
+        ← {prevLabel}
       </button>
       <button
         onClick={() => nextUrl && onNavigate(nextUrl)}
@@ -31,7 +35,7 @@ export default function NavButtons({
         className="px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium border transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
         style={{ borderColor: textColor + "30", color: textColor }}
       >
-        Next →
+        {nextLabel} →
       </button>
     </div>
   );
