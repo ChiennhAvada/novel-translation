@@ -26,6 +26,12 @@ export function extractNovelSlug(url: string): string {
       if (idx >= 0 && parts[idx + 1]) return parts[idx + 1];
     }
 
+    // quanben.io: /n/novel-slug/1.html → novel-slug
+    if (url.includes("quanben.io")) {
+      const nIdx = parts.indexOf("n");
+      if (nIdx >= 0 && parts[nIdx + 1]) return parts[nIdx + 1];
+    }
+
     // 69shuba.com: /txt/NOVEL_ID/CHAPTER_ID → NOVEL_ID
     if (url.includes("69shuba") || url.includes("69shu")) {
       const txtIdx = parts.indexOf("txt");

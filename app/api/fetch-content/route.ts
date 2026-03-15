@@ -23,6 +23,10 @@ const SITE_SELECTORS: Record<string, SiteConfig> = {
     lang: "zh",
     removeSelectors: ["h1", "div.txtinfo", "div#txtright", "script", ".ad", ".ads"],
   },
+  "quanben.io": {
+    content: "#content",
+    lang: "zh",
+  },
 };
 
 function rewriteUrl(url: string): string {
@@ -55,8 +59,8 @@ function extractNav($: cheerio.CheerioAPI): { prevUrl: string | null; nextUrl: s
       const text = $(el).text().trim();
       const href = $(el).attr("href");
       if (!href) return;
-      if (!prevUrl && (text === "Chương trước" || text === "上一章")) prevUrl = href;
-      if (!nextUrl && (text === "Tiếp theo" || text === "Chương sau" || text === "下一章")) nextUrl = href;
+      if (!prevUrl && (text === "Chương trước" || text === "上一章" || text === "上一页")) prevUrl = href;
+      if (!nextUrl && (text === "Tiếp theo" || text === "Chương sau" || text === "下一章" || text === "下一页")) nextUrl = href;
     });
   }
 
@@ -220,15 +224,25 @@ export async function POST(req: Request) {
     const titleStr = result.titleStr || "";
 
     if (siteConfig.lang === "zh") {
-      const parts = titleStr.split(" - ");
-      if (parts.length >= 3) {
-        novelName = parts[0].trim();
-        chapterName = parts[1].trim();
-      } else if (parts.length === 2) {
-        novelName = parts[0].trim();
-        chapterName = parts[1].trim();
+      // Remove site name suffix (e.g. "- 全本小说网", "- 69书吧")
+      const withoutSite = titleStr.split(" - ")[0]?.trim() || titleStr;
+
+      // Try to split "Novel - Chapter" or "Chapter Novel"
+      const dashParts = withoutSite.split(" - ");
+      if (dashParts.length >= 2) {
+        // Format: "Novel - Chapter" (69shuba)
+        novelName = dashParts[0].trim();
+        chapterName = dashParts.slice(1).join(" - ").trim();
       } else {
-        chapterName = titleStr;
+        // Format: "第X章 Title NovelName" (quanben) or just chapter from h1
+        const chapterMatch = withoutSite.match(/^(第\d+章\s+\S+)\s+(.+)$/);
+        if (chapterMatch) {
+          chapterName = chapterMatch[1].trim();
+          novelName = chapterMatch[2].trim();
+        } else {
+          // Use h1 as chapter, try to get novel from title parts
+          chapterName = withoutSite;
+        }
       }
     }
 
