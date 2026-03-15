@@ -3,10 +3,15 @@ import * as cheerio from "cheerio";
 interface SiteConfig {
   content: string;
   lang?: "vi" | "zh";
+  needsBrowser?: boolean;
   removeSelectors?: string[];
 }
 
 const SITE_SELECTORS: Record<string, SiteConfig> = {
+  "tangthuvien.net": {
+    content: 'div[class*="box-chap box-chap-"]',
+    needsBrowser: true,
+  },
   "webnovel.vn": {
     content: ".reader__content",
   },
@@ -107,6 +112,68 @@ async function fetchWithCheerio(fetchUrl: string, siteConfig: SiteConfig) {
   return { text, titleStr, prevUrl, nextUrl };
 }
 
+async function fetchWithBrowser(fetchUrl: string, siteConfig: SiteConfig) {
+  const puppeteer = await import("puppeteer");
+  const browser = await puppeteer.default.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
+
+  try {
+    const page = await browser.newPage();
+    await page.setUserAgent(USER_AGENT);
+    await page.goto(fetchUrl, { waitUntil: "networkidle2", timeout: 30000 });
+    await page.waitForSelector(siteConfig.content, { timeout: 10000 });
+
+    const result = await page.evaluate(
+      (selector: string, removeSels: string[]) => {
+        const el = document.querySelector(selector);
+        if (el && removeSels.length) {
+          el.querySelectorAll(removeSels.join(",")).forEach((e) => e.remove());
+        }
+        const text = el?.textContent ?? "";
+
+        let prevUrl: string | null = null;
+        let nextUrl: string | null = null;
+
+        const relPrev = document.querySelector('a[rel="prev"]') as HTMLAnchorElement | null;
+        const relNext = document.querySelector('a[rel="next"]') as HTMLAnchorElement | null;
+        if (relPrev) prevUrl = relPrev.href;
+        if (relNext) nextUrl = relNext.href;
+
+        if (!prevUrl || !nextUrl) {
+          for (const link of document.querySelectorAll("a")) {
+            const lt = link.textContent?.trim() ?? "";
+            if (!prevUrl && (lt === "Chương trước" || lt === "上一章")) prevUrl = link.href;
+            if (!nextUrl && (lt === "Tiếp theo" || lt === "Chương sau" || lt === "下一章")) nextUrl = link.href;
+          }
+        }
+
+        if (!prevUrl) {
+          const pe = document.querySelector("a.truoc") as HTMLAnchorElement | null;
+          if (pe) prevUrl = pe.href;
+        }
+        if (!nextUrl) {
+          const ne = document.querySelector("a.sau") as HTMLAnchorElement | null;
+          if (ne) nextUrl = ne.href;
+        }
+
+        const titleStr =
+          document.querySelector("h1")?.textContent?.trim() ||
+          document.querySelector("title")?.textContent?.trim() ||
+          "";
+
+        return { text, prevUrl, nextUrl, titleStr };
+      },
+      siteConfig.content,
+      siteConfig.removeSelectors || []
+    );
+
+    return result;
+  } finally {
+    await browser.close();
+  }
+}
 
 export async function POST(req: Request) {
   try {
@@ -127,7 +194,17 @@ export async function POST(req: Request) {
 
     const fetchUrl = rewriteUrl(url);
 
-    const result = await fetchWithCheerio(fetchUrl, siteConfig);
+    let result;
+    if (siteConfig.needsBrowser) {
+      result = await fetchWithBrowser(fetchUrl, siteConfig);
+    } else {
+      try {
+        result = await fetchWithCheerio(fetchUrl, siteConfig);
+      } catch {
+        // Fallback to browser if cheerio fails (e.g. JS-rendered content)
+        result = await fetchWithBrowser(fetchUrl, siteConfig);
+      }
+    }
 
     if (!result.text.trim()) {
       return Response.json(
