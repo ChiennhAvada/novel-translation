@@ -113,6 +113,57 @@ export default function SettingsPanel({ settings, textColor, onUpdate }: Props) 
             </button>
           </div>
         </div>
+
+        <div>
+          <label className="text-sm font-medium block mb-2">
+            Line spacing: {settings.lineSpacing}
+          </label>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() =>
+                onUpdate({ lineSpacing: Math.max(1, +(settings.lineSpacing - 0.2).toFixed(1)) })
+              }
+              className="w-8 h-8 rounded border flex items-center justify-center cursor-pointer transition-colors hover:opacity-70"
+              style={{ borderColor: textColor + "30", color: textColor }}
+            >
+              -
+            </button>
+            <input
+              type="range"
+              min={1}
+              max={3}
+              step={0.2}
+              value={settings.lineSpacing}
+              onChange={(e) =>
+                onUpdate({ lineSpacing: parseFloat(e.target.value) })
+              }
+              className="flex-1"
+            />
+            <button
+              onClick={() =>
+                onUpdate({ lineSpacing: Math.min(3, +(settings.lineSpacing + 0.2).toFixed(1)) })
+              }
+              className="w-8 h-8 rounded border flex items-center justify-center cursor-pointer transition-colors hover:opacity-70"
+              style={{ borderColor: textColor + "30", color: textColor }}
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={settings.autoLineBreak}
+              onChange={(e) => onUpdate({ autoLineBreak: e.target.checked })}
+              className="w-4 h-4 cursor-pointer"
+            />
+            <span className="text-sm font-medium">
+              Auto paragraph breaks (AI detects where to break lines)
+            </span>
+          </label>
+        </div>
       </div>
     </div>
   );

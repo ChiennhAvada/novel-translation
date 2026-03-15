@@ -65,13 +65,14 @@ export async function simplifyText(
   apiKey: string,
   model: string,
   lang?: string,
+  autoLineBreak?: boolean,
   signal?: AbortSignal,
   onChunk?: (accumulated: string) => void
 ): Promise<string> {
   const res = await fetch("/api/simplify", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, apiKey, model, lang: lang || "vi" }),
+    body: JSON.stringify({ text, apiKey, model, lang: lang || "vi", autoLineBreak }),
     signal,
   });
 

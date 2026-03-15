@@ -70,8 +70,11 @@ function extractNav($: cheerio.CheerioAPI): { prevUrl: string | null; nextUrl: s
   return { prevUrl, nextUrl };
 }
 
-function extractTitle($: cheerio.CheerioAPI): string {
-  return $("h1").first().text().trim() || $("title").text().trim() || "";
+function extractTitles($: cheerio.CheerioAPI): { fullTitle: string; h1: string } {
+  return {
+    fullTitle: $("title").text().trim() || "",
+    h1: $("h1").first().text().trim() || "",
+  };
 }
 
 function parseHtml(html: string, siteConfig: SiteConfig, baseUrl: string) {
@@ -89,14 +92,14 @@ function parseHtml(html: string, siteConfig: SiteConfig, baseUrl: string) {
   }
 
   const text = contentEl.text();
-  const titleStr = extractTitle($);
+  const { fullTitle, h1 } = extractTitles($);
   let { prevUrl, nextUrl } = extractNav($);
 
   const origin = new URL(baseUrl).origin;
   if (prevUrl && !prevUrl.startsWith("http")) prevUrl = origin + prevUrl;
   if (nextUrl && !nextUrl.startsWith("http")) nextUrl = origin + nextUrl;
 
-  return { text, titleStr, prevUrl, nextUrl };
+  return { text, fullTitle, h1, prevUrl, nextUrl };
 }
 
 async function fetchWithCheerio(url: string): Promise<string | null> {
@@ -221,27 +224,32 @@ export async function POST(req: Request) {
 
     let novelName = "";
     let chapterName = "";
-    const titleStr = result.titleStr || "";
+    const titleStr = result.fullTitle || result.h1 || "";
 
     if (siteConfig.lang === "zh") {
-      // Remove site name suffix (e.g. "- 全本小说网", "- 69书吧")
-      const withoutSite = titleStr.split(" - ")[0]?.trim() || titleStr;
+      // H1 is always the chapter title
+      chapterName = result.h1 || "";
 
-      // Try to split "Novel - Chapter" or "Chapter Novel"
-      const dashParts = withoutSite.split(" - ");
-      if (dashParts.length >= 2) {
-        // Format: "Novel - Chapter" (69shuba)
-        novelName = dashParts[0].trim();
-        chapterName = dashParts.slice(1).join(" - ").trim();
-      } else {
-        // Format: "第X章 Title NovelName" (quanben) or just chapter from h1
-        const chapterMatch = withoutSite.match(/^(第\d+章\s+\S+)\s+(.+)$/);
-        if (chapterMatch) {
-          chapterName = chapterMatch[1].trim();
-          novelName = chapterMatch[2].trim();
+      // Derive novel name: remove h1 and site name from full title
+      // e.g. "第1章 山边小村 凡人修仙传 - 全本小说网" with h1="第1章 山边小村"
+      //   → remove h1 → "凡人修仙传 - 全本小说网" → remove site → "凡人修仙传"
+      if (result.fullTitle && chapterName) {
+        let remaining = result.fullTitle;
+        // Remove chapter part (h1)
+        remaining = remaining.replace(chapterName, "").trim();
+        // Remove site name (after " - ")
+        remaining = remaining.split(" - ")[0].trim();
+        if (remaining) novelName = remaining;
+      }
+
+      // Fallback: if title has " - " pattern like "Novel - Chapter - Site"
+      if (!novelName && !chapterName) {
+        const parts = titleStr.split(" - ");
+        if (parts.length >= 2) {
+          novelName = parts[0].trim();
+          chapterName = parts[1].trim();
         } else {
-          // Use h1 as chapter, try to get novel from title parts
-          chapterName = withoutSite;
+          chapterName = titleStr;
         }
       }
     }

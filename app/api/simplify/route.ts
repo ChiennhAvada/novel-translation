@@ -21,8 +21,12 @@ Quy tắc BẮT BUỘC:
 - Dùng từ ta thay cho tôi; dùng từ huynh, đệ, muội, tỷ
 - Chỉ trả về bản dịch, không giải thích gì thêm`;
 
-function getSystemPrompt(lang: string): string {
-  return lang === "zh" ? ZH_PROMPT : VI_PROMPT;
+const LINE_BREAK_INSTRUCTION = `
+- Tự động ngắt đoạn văn hợp lý: thêm dòng trống giữa các đoạn khi chuyển cảnh, chuyển ý, hoặc chuyển lời thoại. KHÔNG ngắt dòng mỗi câu.`;
+
+function getSystemPrompt(lang: string, autoLineBreak: boolean): string {
+  const base = lang === "zh" ? ZH_PROMPT : VI_PROMPT;
+  return autoLineBreak ? base + LINE_BREAK_INSTRUCTION : base;
 }
 
 function getProvider(model: string): "openai" | "gemini" | "claude" {
@@ -194,7 +198,7 @@ async function streamClaude(apiKey: string, model: string, text: string, systemP
 
 export async function POST(req: Request) {
   try {
-    const { text, apiKey, model, lang } = await req.json();
+    const { text, apiKey, model, lang, autoLineBreak } = await req.json();
 
     if (!text || typeof text !== "string") {
       return Response.json({ error: "Missing text" }, { status: 400 });
@@ -208,7 +212,7 @@ export async function POST(req: Request) {
     }
 
     const provider = getProvider(model || "gpt-4o");
-    const systemPrompt = getSystemPrompt(lang || "vi");
+    const systemPrompt = getSystemPrompt(lang || "vi", !!autoLineBreak);
     let stream: ReadableStream;
 
     switch (provider) {

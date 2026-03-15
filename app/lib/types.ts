@@ -60,6 +60,8 @@ export const AI_MODEL_OPTIONS: AIModelOption[] = [
 export interface ReaderSettings {
   bgColor: string;
   fontSize: number;
+  lineSpacing: number;
+  autoLineBreak: boolean;
   apiKey: string;
   aiModel: string;
 }

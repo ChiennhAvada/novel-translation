@@ -35,6 +35,8 @@ export default function Home() {
   const [settings, setSettings] = useState<ReaderSettings>({
     bgColor: "#f5f5dc",
     fontSize: 18,
+    lineSpacing: 1.8,
+    autoLineBreak: false,
     apiKey: "",
     aiModel: "gpt-4o",
   });
@@ -114,6 +116,7 @@ export default function Home() {
           settings.apiKey,
           settings.aiModel,
           data.lang,
+          settings.autoLineBreak,
           controller.signal,
           setSimplifiedText
         );
@@ -325,8 +328,8 @@ export default function Home() {
         <NavButtons prevUrl={prevUrl} nextUrl={nextUrl} disabled={isLoading || !settings.apiKey?.trim()} textColor={textColor} onNavigate={navigateToChapter} />
 
         <div
-          className="min-h-[60vh] px-1 sm:px-2 py-4 whitespace-pre-wrap leading-relaxed"
-          style={{ fontSize: `${settings.fontSize}px` }}
+          className="min-h-[60vh] px-1 sm:px-2 py-4 whitespace-pre-wrap"
+          style={{ fontSize: `${settings.fontSize}px`, lineHeight: settings.lineSpacing }}
         >
           {simplifiedText || (
             <span style={{ color: textColor + "40" }}>Content will appear here...</span>
