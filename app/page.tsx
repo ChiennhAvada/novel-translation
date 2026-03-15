@@ -35,6 +35,8 @@ export default function Home() {
   const [settings, setSettings] = useState<ReaderSettings>({
     bgColor: "#f5f5dc",
     fontSize: 18,
+    lineSpacing: 1.8,
+    autoLineBreak: false,
     apiKey: "",
     aiModel: "gpt-4o",
   });
@@ -114,6 +116,7 @@ export default function Home() {
           settings.apiKey,
           settings.aiModel,
           data.lang,
+          settings.autoLineBreak,
           controller.signal,
           setSimplifiedText
         );
@@ -122,19 +125,23 @@ export default function Home() {
         if (data.lang === "zh") {
           try {
             if (data.chapterName) {
-              const title = await translateTitle(
-                data.chapterName,
-                settings.apiKey,
-                settings.aiModel,
-                "Dịch tiêu đề truyện sau từ tiếng Trung sang tiếng Việt (ưu tiên Hán Việt) phổ thông dễ hiểu. Giữ nguyên dấu '-' phân cách giữa tên truyện và tên chương. Chỉ trả về bản dịch, không giải thích."
-              );
-              const [tNovel,tChapter] = title.split(/\s*-\s*/);
+              const [cName,nName] = await Promise.all([translateTitle(
+                  data.chapterName,
+                  settings.apiKey,
+                  settings.aiModel,
+                  "Dịch tiêu đề truyện sau từ tiếng Trung sang tiếng Việt (ưu tiên Hán Việt) phổ thông dễ hiểu. Giữ nguyên dấu '-' phân cách giữa tên truyện và tên chương. Chỉ trả về bản dịch, không giải thích."
+              ),translateTitle(
+                  data.novelName,
+                  settings.apiKey,
+                  settings.aiModel,
+                  "Dịch tiêu đề truyện sau từ tiếng Trung sang tiếng Việt (ưu tiên Hán Việt) phổ thông dễ hiểu. Giữ nguyên dấu '-' phân cách giữa tên truyện và tên chương. Chỉ trả về bản dịch, không giải thích."
+              )]);
 
-              setChapterName(tChapter);
-              setNovelName(tNovel);
-              setTitle(tNovel);
-              data.novelName = tNovel;
-              data.chapterName = tChapter;
+              setChapterName(cName);
+              setNovelName(nName)
+              setTitle(cName);
+              data.chapterName = cName;
+              data.novelName = nName;
             }
           } catch { /* keep original */ }
         }
@@ -325,8 +332,8 @@ export default function Home() {
         <NavButtons prevUrl={prevUrl} nextUrl={nextUrl} disabled={isLoading || !settings.apiKey?.trim()} textColor={textColor} onNavigate={navigateToChapter} />
 
         <div
-          className="min-h-[60vh] px-1 sm:px-2 py-4 whitespace-pre-wrap leading-relaxed"
-          style={{ fontSize: `${settings.fontSize}px` }}
+          className="min-h-[60vh] px-1 sm:px-2 py-4 whitespace-pre-wrap"
+          style={{ fontSize: `${settings.fontSize}px`, lineHeight: settings.lineSpacing }}
         >
           {simplifiedText || (
             <span style={{ color: textColor + "40" }}>Content will appear here...</span>

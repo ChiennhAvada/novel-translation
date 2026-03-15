@@ -7,6 +7,8 @@ const SETTINGS_KEY = "novel-translator-settings";
 const DEFAULT_SETTINGS: ReaderSettings = {
   bgColor: "#f5f5dc",
   fontSize: 18,
+  lineSpacing: 1.8,
+  autoLineBreak: false,
   apiKey: "",
   aiModel: "gpt-4o",
 };
