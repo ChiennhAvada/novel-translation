@@ -4,7 +4,7 @@ function getProvider(model: string): "openai" | "gemini" | "claude" {
   return "openai";
 }
 
-const DEFAULT_PROMPT = "Dịch tiêu đề truyện sau từ tiếng Trung sang phiên âm Hán Việt. Chỉ trả về bản dịch, không giải thích.";
+const DEFAULT_PROMPT = "Dịch tiêu đề truyện sau từ tiếng Trung sang phiên âm Hán Việt. KHÔNG được để lại bất kỳ chữ Trung Quốc nào. Chỉ trả về bản dịch, không giải thích.";
 
 async function translate(apiKey: string, model: string, title: string, prompt: string): Promise<string> {
   const provider = getProvider(model);
