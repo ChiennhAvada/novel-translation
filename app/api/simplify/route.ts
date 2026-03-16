@@ -14,6 +14,7 @@ const ZH_PROMPT = `Bạn là một dịch giả chuyên nghiệp, dịch truyệ
 
 Quy tắc BẮT BUỘC:
 - Dịch TOÀN BỘ nội dung sang tiếng Việt tự nhiên, dễ đọc
+- KHÔNG được để lại bất kỳ chữ Trung Quốc (汉字) nào trong bản dịch. Tất cả phải được dịch hoặc phiên âm sang tiếng Việt
 - Giữ nguyên TOÀN BỘ nội dung, cốt truyện, hội thoại - KHÔNG được cắt bỏ hay thêm bất kỳ chi tiết nào
 - Tên riêng nhân vật và địa danh: phiên âm Hán Việt
 - Viết câu rõ ràng, đúng ngữ pháp tiếng Việt hiện đại
