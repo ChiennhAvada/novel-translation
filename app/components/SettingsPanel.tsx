@@ -7,10 +7,15 @@ interface Props {
   settings: ReaderSettings;
   textColor: string;
   t: Translations;
+  url: string;
+  onUrlChange: (url: string) => void;
+  onTranslate: () => void;
+  isLoading: boolean;
+  buttonLabel: string;
   onUpdate: (patch: Partial<ReaderSettings>) => void;
 }
 
-export default function SettingsPanel({ settings, textColor, t, onUpdate }: Props) {
+export default function SettingsPanel({ settings, textColor, t, url, onUrlChange, onTranslate, isLoading, buttonLabel, onUpdate }: Props) {
   const inputStyle = {
     backgroundColor: "transparent",
     borderColor: textColor + "30",
@@ -23,6 +28,44 @@ export default function SettingsPanel({ settings, textColor, t, onUpdate }: Prop
       style={{ borderColor: textColor + "20" }}
     >
       <div className="flex flex-col gap-4">
+        <div>
+          <label className="text-sm font-medium block mb-2">{t.pastePlaceholder}</label>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="url"
+              value={url}
+              onChange={(e) => onUrlChange(e.target.value)}
+              onKeyDown={(e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                  e.preventDefault();
+                  onTranslate();
+                }
+              }}
+              placeholder={t.pastePlaceholder}
+              className="flex-1 px-3 py-2 rounded border text-sm min-w-0"
+              style={{ backgroundColor: "transparent", borderColor: textColor + "30", color: textColor }}
+            />
+            <button
+              onClick={onTranslate}
+              disabled={isLoading || !url.trim() || !settings.apiKey?.trim()}
+              className="px-5 py-2 cursor-pointer bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+            >
+              {buttonLabel}
+            </button>
+          </div>
+          <p className="text-xs mt-1" style={{ color: textColor + "50" }}>
+            {t.linkHelpText}{" "}
+            <a
+              href="https://quanben.io/n/yuanlaiwoshixiuxiandalao/1.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:opacity-70"
+            >
+              quanben.io/n/yuanlaiwoshixiuxiandalao/1.html
+            </a>
+          </p>
+        </div>
+
         <div>
           <label className="text-sm font-medium block mb-2">{t.language}</label>
           <select
@@ -167,15 +210,25 @@ export default function SettingsPanel({ settings, textColor, t, onUpdate }: Prop
         </div>
 
         <div>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={settings.autoLineBreak}
-              onChange={(e) => onUpdate({ autoLineBreak: e.target.checked })}
-              className="w-4 h-4 cursor-pointer"
-            />
+          <div
+            className="flex items-center justify-between gap-3 cursor-pointer"
+            onClick={() => onUpdate({ autoLineBreak: !settings.autoLineBreak })}
+          >
             <span className="text-sm font-medium">{t.autoLineBreak}</span>
-          </label>
+            <div
+              className="relative w-11 h-6 rounded-full shrink-0 transition-colors duration-200"
+              style={{
+                backgroundColor: settings.autoLineBreak ? "#3b82f6" : textColor + "20",
+              }}
+            >
+              <div
+                className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200"
+                style={{
+                  transform: settings.autoLineBreak ? "translateX(22px)" : "translateX(2px)",
+                }}
+              />
+            </div>
+          </div>
         </div>
 
         <div>

@@ -255,13 +255,6 @@ export default function Home() {
     }
   }
 
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-      e.preventDefault();
-      handleFetchAndSimplify();
-    }
-  }
-
   const isLoading = fetching || simplifying;
   const buttonLabel = fetching
     ? t.fetching
@@ -307,7 +300,20 @@ export default function Home() {
         </div>
 
         {activePanel === "settings" && (
-          <SettingsPanel settings={settings} textColor={textColor} t={t} onUpdate={updateSettings} />
+          <SettingsPanel
+            settings={settings}
+            textColor={textColor}
+            t={t}
+            url={url}
+            onUrlChange={setUrl}
+            onTranslate={() => {
+              setActivePanel("none");
+              handleFetchAndSimplify();
+            }}
+            isLoading={isLoading}
+            buttonLabel={buttonLabel}
+            onUpdate={updateSettings}
+          />
         )}
 
         {activePanel === "novels" && (
@@ -331,25 +337,6 @@ export default function Home() {
             onLoad={loadSavedChapter}
           />
         )}
-
-        <div className="flex flex-col sm:flex-row gap-2 mb-4">
-          <input
-            type="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={t.pastePlaceholder}
-            className="flex-1 px-3 sm:px-4 py-2.5 rounded-lg border text-sm min-w-0"
-            style={{ backgroundColor: settings.bgColor, borderColor: textColor + "30", color: textColor }}
-          />
-          <button
-            onClick={() => handleFetchAndSimplify()}
-            disabled={isLoading || !url.trim() || !settings.apiKey?.trim()}
-            className="px-5 py-2.5 cursor-pointer bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
-          >
-            {buttonLabel}
-          </button>
-        </div>
 
         {(novelName || chapterName || title) && (
           <div className="text-center mb-4">
