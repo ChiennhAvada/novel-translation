@@ -94,5 +94,20 @@ export async function simplifyText(
     }
   }
 
+  // Extract and log token usage
+  const usageMatch = result.match(/\n<!--USAGE:(\{.*?\})-->/);
+  if (usageMatch) {
+    result = result.replace(usageMatch[0], "");
+    try {
+      const usage = JSON.parse(usageMatch[1]);
+      console.log(
+        `[Token Usage] Input: ${usage.input}, Output: ${usage.output}, Total: ${usage.input + usage.output}`
+      );
+    } catch {
+      // ignore
+    }
+    onChunk?.(result);
+  }
+
   return result;
 }

@@ -45,6 +45,7 @@ async function streamOpenAI(apiKey: string, model: string, text: string, systemP
     body: JSON.stringify({
       model,
       stream: true,
+      stream_options: { include_usage: true },
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: text },
@@ -64,6 +65,7 @@ async function streamOpenAI(apiKey: string, model: string, text: string, systemP
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
+      let usage = { input: 0, output: 0 };
 
       while (true) {
         const { done, value } = await reader.read();
@@ -80,11 +82,16 @@ async function streamOpenAI(apiKey: string, model: string, text: string, systemP
             const json = JSON.parse(data);
             const content = json.choices?.[0]?.delta?.content;
             if (content) controller.enqueue(encoder.encode(content));
+            if (json.usage) {
+              usage.input = json.usage.prompt_tokens || 0;
+              usage.output = json.usage.completion_tokens || 0;
+            }
           } catch {
             // skip
           }
         }
       }
+      controller.enqueue(encoder.encode(`\n<!--USAGE:${JSON.stringify(usage)}-->`));
       controller.close();
     },
   });
@@ -114,6 +121,7 @@ async function streamGemini(apiKey: string, model: string, text: string, systemP
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
+      let usage = { input: 0, output: 0 };
 
       while (true) {
         const { done, value } = await reader.read();
@@ -132,11 +140,16 @@ async function streamGemini(apiKey: string, model: string, text: string, systemP
                 if (part.text) controller.enqueue(encoder.encode(part.text));
               }
             }
+            if (json.usageMetadata) {
+              usage.input = json.usageMetadata.promptTokenCount || 0;
+              usage.output = json.usageMetadata.candidatesTokenCount || 0;
+            }
           } catch {
             // skip
           }
         }
       }
+      controller.enqueue(encoder.encode(`\n<!--USAGE:${JSON.stringify(usage)}-->`));
       controller.close();
     },
   });
@@ -171,6 +184,7 @@ async function streamClaude(apiKey: string, model: string, text: string, systemP
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
+      let usage = { input: 0, output: 0 };
 
       while (true) {
         const { done, value } = await reader.read();
@@ -186,11 +200,18 @@ async function streamClaude(apiKey: string, model: string, text: string, systemP
             if (json.type === "content_block_delta" && json.delta?.text) {
               controller.enqueue(encoder.encode(json.delta.text));
             }
+            if (json.type === "message_start" && json.message?.usage) {
+              usage.input = json.message.usage.input_tokens || 0;
+            }
+            if (json.type === "message_delta" && json.usage) {
+              usage.output = json.usage.output_tokens || 0;
+            }
           } catch {
             // skip
           }
         }
       }
+      controller.enqueue(encoder.encode(`\n<!--USAGE:${JSON.stringify(usage)}-->`));
       controller.close();
     },
   });
