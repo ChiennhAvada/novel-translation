@@ -199,6 +199,7 @@ export default function Home() {
   );
 
   async function navigateToChapter(targetUrl: string) {
+    window.scrollTo(0, 0);
     const saved = getSavedChapters().find((c) => c.url === targetUrl);
     if (saved) {
       await loadSavedChapter(saved);
