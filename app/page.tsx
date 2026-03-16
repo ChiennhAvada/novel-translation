@@ -11,6 +11,8 @@ import {
   setCurrentUrl,
   getSettings,
   saveSettings,
+  getScrollPosition,
+  saveScrollPosition,
 } from "./lib/storage";
 import { fetchChapterContent, simplifyText, translateTitle } from "./lib/api";
 import SettingsPanel from "./components/SettingsPanel";
@@ -64,11 +66,33 @@ export default function Home() {
         setSimplifiedText(chapter.simplifiedText);
         setPrevUrl(chapter.prevUrl || null);
         setNextUrl(chapter.nextUrl || null);
+        // Restore scroll position after content renders
+        requestAnimationFrame(() => {
+          const saved = getScrollPosition(currentUrl);
+          if (saved) window.scrollTo(0, saved);
+        });
       } else {
         setUrl(currentUrl);
       }
     }
   }, []);
+
+  // Save scroll position on scroll (debounced)
+  useEffect(() => {
+    if (!url) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const handleScroll = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        saveScrollPosition(url, window.scrollY);
+      }, 300);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [url]);
 
   function togglePanel(panel: Panel) {
     setActivePanel((prev) => (prev === panel ? "none" : panel));
@@ -101,6 +125,7 @@ export default function Home() {
       setPrevUrl(null);
       setNextUrl(null);
       if (targetUrl) setUrl(targetUrl);
+      window.scrollTo(0, 0);
 
       try {
         const data = await fetchChapterContent(fetchUrl, controller.signal);
@@ -192,6 +217,11 @@ export default function Home() {
     setNextUrl(chapter.nextUrl || null);
     setActivePanel("none");
     setCurrentUrl(chapter.url);
+    // Restore scroll position after content renders
+    requestAnimationFrame(() => {
+      const saved = getScrollPosition(chapter.url);
+      window.scrollTo(0, saved);
+    });
 
     if (!chapter.prevUrl && !chapter.nextUrl) {
       try {

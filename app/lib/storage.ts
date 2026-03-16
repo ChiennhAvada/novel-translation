@@ -3,6 +3,7 @@ import { SavedChapter, ReaderSettings } from "./types";
 const STORAGE_KEY = "novel-translator-chapters";
 const CURRENT_KEY = "novel-translator-current";
 const SETTINGS_KEY = "novel-translator-settings";
+const SCROLL_KEY = "novel-translator-scroll";
 
 const DEFAULT_SETTINGS: ReaderSettings = {
   bgColor: "#1a1a2e",
@@ -114,6 +115,25 @@ export function getSettings(): ReaderSettings {
 
 export function saveSettings(settings: ReaderSettings) {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+export function getScrollPosition(url: string): number {
+  try {
+    const positions = JSON.parse(localStorage.getItem(SCROLL_KEY) || "{}");
+    return positions[url] || 0;
+  } catch {
+    return 0;
+  }
+}
+
+export function saveScrollPosition(url: string, position: number) {
+  try {
+    const positions = JSON.parse(localStorage.getItem(SCROLL_KEY) || "{}");
+    positions[url] = position;
+    localStorage.setItem(SCROLL_KEY, JSON.stringify(positions));
+  } catch {
+    // ignore
+  }
 }
 
 export function extractChapterNumber(title: string): number | null {
