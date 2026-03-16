@@ -270,7 +270,7 @@ export default function Home() {
       : t.translate;
   const textColor = getTextColor(settings.bgColor);
   const btnStyle = { borderColor: textColor + "30", color: textColor, backgroundColor: settings.bgColor };
-  const btnClass = "px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors cursor-pointer hover:opacity-70";
+  const btnClass = "panel-btn px-3 py-1.5 rounded-lg text-sm font-medium border transition-all cursor-pointer";
 
   return (
     <main
@@ -284,21 +284,21 @@ export default function Home() {
             <button
               onClick={() => togglePanel("chapters")}
               disabled={!currentNovelSlug || currentNovelChapters.length === 0}
-              className={btnClass + " text-xs sm:text-sm disabled:opacity-30 disabled:cursor-not-allowed"}
+              className={btnClass + " text-xs sm:text-sm disabled:opacity-30 disabled:cursor-not-allowed" + (activePanel === "chapters" ? " active" : "")}
               style={btnStyle}
             >
               {t.chapters} ({currentNovelChapters.length})
             </button>
             <button
               onClick={() => togglePanel("novels")}
-              className={btnClass + " text-xs sm:text-sm"}
+              className={btnClass + " text-xs sm:text-sm" + (activePanel === "novels" ? " active" : "")}
               style={btnStyle}
             >
               {t.novels}
             </button>
             <button
               onClick={() => togglePanel("settings")}
-              className={btnClass + " text-xs sm:text-sm"}
+              className={btnClass + " text-xs sm:text-sm" + (activePanel === "settings" ? " active" : "")}
               style={btnStyle}
             >
               {t.settings}
