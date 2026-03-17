@@ -10,8 +10,11 @@ const DEFAULT_SETTINGS: ReaderSettings = {
   fontSize: 18,
   lineSpacing: 1.8,
   autoLineBreak: true,
-  apiKey: "",
-  aiModel: "gpt-4o",
+  openaiApiKey: "",
+  geminiApiKey: "",
+  claudeApiKey: "",
+  aiModel: "gemini-3-flash-preview",
+  customPrompt: "",
   appLang: "vi",
 };
 
@@ -107,7 +110,14 @@ export function setCurrentUrl(url: string) {
 export function getSettings(): ReaderSettings {
   try {
     const stored = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "null");
-    return stored ? { ...DEFAULT_SETTINGS, ...stored } : DEFAULT_SETTINGS;
+    if (!stored) return DEFAULT_SETTINGS;
+    const settings = { ...DEFAULT_SETTINGS, ...stored };
+    // Migrate legacy single apiKey to openaiApiKey
+    if (stored.apiKey && !stored.openaiApiKey) {
+      settings.openaiApiKey = stored.apiKey;
+    }
+    delete (settings as Record<string, unknown>).apiKey;
+    return settings;
   } catch {
     return DEFAULT_SETTINGS;
   }

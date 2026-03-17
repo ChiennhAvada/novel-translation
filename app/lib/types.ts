@@ -37,12 +37,13 @@ export const AI_MODEL_OPTIONS: AIModelOption[] = [
     provider: "gemini",
     label: "Google Gemini",
     models: [
+      "gemini-3.1-pro-preview",
+      "gemini-3-flash-preview",
+      "gemini-3.1-flash-lite-preview",
       "gemini-2.5-flash",
       "gemini-2.5-flash-lite",
       "gemini-2.0-flash",
       "gemini-2.0-flash-lite",
-      "gemini-1.5-pro",
-      "gemini-1.5-flash",
     ],
   },
   {
@@ -51,8 +52,8 @@ export const AI_MODEL_OPTIONS: AIModelOption[] = [
     models: [
       "claude-opus-4-20250514",
       "claude-sonnet-4-20250514",
+      "claude-sonnet-4-5-20241022",
       "claude-haiku-4-5-20251001",
-      "claude-3-5-sonnet-20241022",
     ],
   },
 ];
@@ -62,9 +63,27 @@ export interface ReaderSettings {
   fontSize: number;
   lineSpacing: number;
   autoLineBreak: boolean;
-  apiKey: string;
+  openaiApiKey: string;
+  geminiApiKey: string;
+  claudeApiKey: string;
   aiModel: string;
+  customPrompt: string;
   appLang: "en" | "vi";
+}
+
+export function getProviderForModel(model: string): AIProvider {
+  if (model.startsWith("gemini")) return "gemini";
+  if (model.startsWith("claude")) return "claude";
+  return "openai";
+}
+
+export function getApiKeyForModel(settings: ReaderSettings): string {
+  const provider = getProviderForModel(settings.aiModel);
+  switch (provider) {
+    case "gemini": return settings.geminiApiKey;
+    case "claude": return settings.claudeApiKey;
+    default: return settings.openaiApiKey;
+  }
 }
 
 export const BG_OPTIONS = [

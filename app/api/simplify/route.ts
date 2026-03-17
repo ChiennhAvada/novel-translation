@@ -220,7 +220,7 @@ async function streamClaude(apiKey: string, model: string, text: string, systemP
 
 export async function POST(req: Request) {
   try {
-    const { text, apiKey, model, lang, autoLineBreak } = await req.json();
+    const { text, apiKey, model, lang, autoLineBreak, customPrompt } = await req.json();
 
     if (!text || typeof text !== "string") {
       return Response.json({ error: "Missing text" }, { status: 400 });
@@ -234,7 +234,10 @@ export async function POST(req: Request) {
     }
 
     const provider = getProvider(model || "gpt-4o");
-    const systemPrompt = getSystemPrompt(lang || "vi", !!autoLineBreak);
+    let systemPrompt = getSystemPrompt(lang || "vi", !!autoLineBreak);
+    if (customPrompt && typeof customPrompt === "string") {
+      systemPrompt += "\n" + customPrompt.trim();
+    }
     let stream: ReadableStream;
 
     switch (provider) {

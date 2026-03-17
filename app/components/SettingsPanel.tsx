@@ -1,6 +1,6 @@
 "use client";
 
-import { ReaderSettings, BG_OPTIONS, AI_MODEL_OPTIONS } from "../lib/types";
+import { ReaderSettings, BG_OPTIONS, getApiKeyForModel } from "../lib/types";
 import { Translations } from "../lib/i18n";
 
 interface Props {
@@ -47,7 +47,7 @@ export default function SettingsPanel({ settings, textColor, t, url, onUrlChange
             />
             <button
               onClick={onTranslate}
-              disabled={isLoading || !url.trim() || !settings.apiKey?.trim()}
+              disabled={isLoading || !url.trim() || !getApiKeyForModel(settings)?.trim()}
               className="px-5 py-2 cursor-pointer bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
             >
               {buttonLabel}
@@ -77,41 +77,6 @@ export default function SettingsPanel({ settings, textColor, t, url, onUrlChange
             <option value="en">English</option>
             <option value="vi">Tiếng Việt</option>
           </select>
-        </div>
-
-        <div>
-          <label className="text-sm font-medium block mb-2">{t.aiModel}</label>
-          <select
-            value={settings.aiModel}
-            onChange={(e) => onUpdate({ aiModel: e.target.value })}
-            className="w-full px-3 py-2 rounded border text-sm"
-            style={inputStyle}
-          >
-            {AI_MODEL_OPTIONS.map((group) => (
-              <optgroup key={group.provider} label={group.label}>
-                {group.models.map((model) => (
-                  <option key={model} value={model}>
-                    {model}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="text-sm font-medium block mb-2">{t.apiKey}</label>
-          <input
-            type="password"
-            value={settings.apiKey}
-            onChange={(e) => onUpdate({ apiKey: e.target.value })}
-            placeholder={t.apiKeyPlaceholder}
-            className="w-full px-3 py-2 rounded border text-sm"
-            style={inputStyle}
-          />
-          <p className="text-xs mt-1" style={{ color: textColor + "50" }}>
-            {t.apiKeyNote}
-          </p>
         </div>
 
         <div>

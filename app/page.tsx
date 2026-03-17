@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { SavedChapter, ReaderSettings, getTextColor } from "./lib/types";
+import { SavedChapter, ReaderSettings, getTextColor, getApiKeyForModel } from "./lib/types";
 import {
   getSavedChapters,
   saveChapter,
@@ -16,12 +16,13 @@ import {
 } from "./lib/storage";
 import { fetchChapterContent, simplifyText, translateTitle } from "./lib/api";
 import SettingsPanel from "./components/SettingsPanel";
+import AISettingsPanel from "./components/AISettingsPanel";
 import SavedChaptersList from "./components/SavedChaptersList";
 import SavedNovelsList from "./components/SavedNovelsList";
 import NavButtons from "./components/NavButtons";
 import { getTranslations } from "./lib/i18n";
 
-type Panel = "none" | "chapters" | "novels" | "settings";
+type Panel = "none" | "chapters" | "novels" | "settings" | "ai-settings";
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -40,8 +41,11 @@ export default function Home() {
     fontSize: 18,
     lineSpacing: 1.8,
     autoLineBreak: true,
-    apiKey: "",
-    aiModel: "gpt-4o",
+    openaiApiKey: "",
+    geminiApiKey: "",
+    claudeApiKey: "",
+    aiModel: "gemini-3-flash-preview",
+    customPrompt: "",
     appLang: "vi",
   });
   const abortRef = useRef<AbortController | null>(null);
@@ -141,12 +145,13 @@ export default function Home() {
 
         const result = await simplifyText(
           data.text,
-          settings.apiKey,
+          getApiKeyForModel(settings),
           settings.aiModel,
           data.lang,
           settings.autoLineBreak,
           controller.signal,
-          setSimplifiedText
+          setSimplifiedText,
+          settings.customPrompt
         );
 
         // Translate title if Chinese
@@ -155,12 +160,12 @@ export default function Home() {
             if (data.chapterName) {
               const [cName,nName] = await Promise.all([translateTitle(
                   data.chapterName,
-                  settings.apiKey,
+                  getApiKeyForModel(settings),
                   settings.aiModel,
                   "Dịch tiêu đề truyện sau từ tiếng Trung sang tiếng Việt (ưu tiên Hán Việt) phổ thông dễ hiểu. KHÔNG được để lại bất kỳ chữ Trung Quốc nào. Giữ nguyên dấu '-' phân cách giữa tên truyện và tên chương. Chỉ trả về bản dịch, không giải thích."
               ),translateTitle(
                   data.novelName,
-                  settings.apiKey,
+                  getApiKeyForModel(settings),
                   settings.aiModel,
                   "Dịch tiêu đề truyện sau từ tiếng Trung sang tiếng Việt (ưu tiên Hán Việt) phổ thông dễ hiểu. KHÔNG được để lại bất kỳ chữ Trung Quốc nào. Giữ nguyên dấu '-' phân cách giữa tên truyện và tên chương. Chỉ trả về bản dịch, không giải thích."
               )]);
@@ -195,7 +200,7 @@ export default function Home() {
         setSimplifying(false);
       }
     },
-    [url, fetching, simplifying, settings.apiKey, settings.aiModel]
+    [url, fetching, simplifying, getApiKeyForModel(settings), settings.aiModel]
   );
 
   async function navigateToChapter(targetUrl: string) {
@@ -290,6 +295,13 @@ export default function Home() {
               {t.novels}
             </button>
             <button
+              onClick={() => togglePanel("ai-settings")}
+              className={btnClass + " text-xs sm:text-sm" + (activePanel === "ai-settings" ? " active" : "")}
+              style={btnStyle}
+            >
+              {t.aiSettings}
+            </button>
+            <button
               onClick={() => togglePanel("settings")}
               className={btnClass + " text-xs sm:text-sm" + (activePanel === "settings" ? " active" : "")}
               style={btnStyle}
@@ -298,6 +310,15 @@ export default function Home() {
             </button>
           </div>
         </div>
+
+        {activePanel === "ai-settings" && (
+          <AISettingsPanel
+            settings={settings}
+            textColor={textColor}
+            t={t}
+            onUpdate={updateSettings}
+          />
+        )}
 
         {activePanel === "settings" && (
           <SettingsPanel
@@ -352,7 +373,7 @@ export default function Home() {
           </div>
         )}
 
-        <NavButtons prevUrl={prevUrl} nextUrl={nextUrl} disabled={isLoading || !settings.apiKey?.trim()} textColor={textColor} prevLabel={t.previous} nextLabel={t.next} onNavigate={navigateToChapter} />
+        <NavButtons prevUrl={prevUrl} nextUrl={nextUrl} disabled={isLoading || !getApiKeyForModel(settings)?.trim()} textColor={textColor} prevLabel={t.previous} nextLabel={t.next} onNavigate={navigateToChapter} />
 
         <div
           className="min-h-[60vh] px-1 sm:px-2 py-4 whitespace-pre-wrap"
@@ -363,7 +384,7 @@ export default function Home() {
           )}
         </div>
 
-        <NavButtons prevUrl={prevUrl} nextUrl={nextUrl} disabled={isLoading || !settings.apiKey?.trim()} textColor={textColor} prevLabel={t.previous} nextLabel={t.next} onNavigate={navigateToChapter} />
+        <NavButtons prevUrl={prevUrl} nextUrl={nextUrl} disabled={isLoading || !getApiKeyForModel(settings)?.trim()} textColor={textColor} prevLabel={t.previous} nextLabel={t.next} onNavigate={navigateToChapter} />
       </div>
     </main>
   );
