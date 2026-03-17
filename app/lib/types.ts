@@ -27,23 +27,15 @@ export const AI_MODEL_OPTIONS: AIModelOption[] = [
       "gpt-4.1",
       "gpt-4.1-mini",
       "gpt-4.1-nano",
-      "gpt-4-turbo",
-      "o4-mini",
-      "o3",
-      "o3-mini",
+      "gpt-4-turbo"
     ],
   },
   {
     provider: "gemini",
     label: "Google Gemini",
     models: [
-      "gemini-3.1-pro-preview",
       "gemini-3-flash-preview",
-      "gemini-3.1-flash-lite-preview",
       "gemini-2.5-flash",
-      "gemini-2.5-flash-lite",
-      "gemini-2.0-flash",
-      "gemini-2.0-flash-lite",
     ],
   },
   {
