@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { SavedChapter, ReaderSettings, getTextColor, getApiKeyForModel } from "./lib/types";
 import {
   getSavedChapters,
@@ -48,6 +48,7 @@ export default function Home() {
     customPrompt: "",
     appLang: "vi",
   });
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const t = getTranslations(settings.appLang);
 
@@ -81,11 +82,12 @@ export default function Home() {
     }
   }, []);
 
-  // Save scroll position on scroll (debounced)
+  // Save scroll position on scroll (debounced) and show/hide scroll-to-top button
   useEffect(() => {
-    if (!url) return;
     let timer: ReturnType<typeof setTimeout>;
     const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+      if (!url) return;
       clearTimeout(timer);
       timer = setTimeout(() => {
         saveScrollPosition(url, window.scrollY);
@@ -386,6 +388,24 @@ export default function Home() {
 
         <NavButtons prevUrl={prevUrl} nextUrl={nextUrl} disabled={isLoading || !getApiKeyForModel(settings)?.trim()} textColor={textColor} prevLabel={t.previous} nextLabel={t.next} onNavigate={navigateToChapter} />
       </div>
+
+      {showScrollTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-6 right-6 w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 cursor-pointer z-50"
+          style={{
+            backgroundColor: textColor + "20",
+            color: textColor,
+            border: `1px solid ${textColor}30`,
+            backdropFilter: "blur(8px)",
+          }}
+          aria-label="Scroll to top"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 15l-6-6-6 6" />
+          </svg>
+        </button>
+      )}
     </main>
   );
 }
