@@ -69,8 +69,23 @@ async function translate(apiKey: string, model: string, title: string, prompt: s
 
 export async function POST(req: Request) {
   try {
-    const { title, apiKey, model, prompt } = await req.json();
+    const { title, titles, apiKey, model, prompt } = await req.json();
 
+    // Batch mode: translate multiple titles in a single AI call
+    if (titles && Array.isArray(titles) && titles.length > 0 && apiKey) {
+      const combined = titles.map((t: string, i: number) => `[${i + 1}] ${t}`).join("\n");
+      const batchPrompt = (prompt || DEFAULT_PROMPT) +
+        `\n\nCó ${titles.length} tiêu đề cần dịch, mỗi tiêu đề trên một dòng có đánh số [1], [2],... Trả về bản dịch theo đúng format [1] ..., [2] ..., mỗi dòng một tiêu đề.`;
+      const result = await translate(apiKey, model || "gpt-4o", combined, batchPrompt);
+      const translated = titles.map((_: string, i: number) => {
+        const regex = new RegExp(`\\[${i + 1}\\]\\s*(.+)`);
+        const match = result.match(regex);
+        return match ? match[1].trim() : titles[i];
+      });
+      return Response.json({ translated });
+    }
+
+    // Single mode (backward compatible)
     if (!title || !apiKey) {
       return Response.json({ translated: title }, { status: 200 });
     }

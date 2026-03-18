@@ -60,6 +60,30 @@ export async function translateTitle(
   }
 }
 
+export async function translateTitles(
+  titles: string[],
+  apiKey: string,
+  model: string,
+  prompt?: string
+): Promise<string[]> {
+  if (!apiKey || titles.every((t) => !t.trim())) return titles;
+
+  try {
+    const res = await fetch("/api/translate-title", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ titles, apiKey, model, prompt }),
+    });
+
+    if (!res.ok) return titles;
+
+    const data = await res.json();
+    return Array.isArray(data.translated) ? data.translated : titles;
+  } catch {
+    return titles;
+  }
+}
+
 export async function simplifyText(
   text: string,
   apiKey: string,

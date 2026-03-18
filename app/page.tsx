@@ -14,7 +14,7 @@ import {
   getScrollPosition,
   saveScrollPosition,
 } from "./lib/storage";
-import { fetchChapterContent, simplifyText, translateTitle } from "./lib/api";
+import { fetchChapterContent, simplifyText, translateTitles } from "./lib/api";
 import SettingsPanel from "./components/SettingsPanel";
 import AISettingsPanel from "./components/AISettingsPanel";
 import SavedChaptersList from "./components/SavedChaptersList";
@@ -156,28 +156,22 @@ export default function Home() {
           settings.customPrompt
         );
 
-        // Translate title if Chinese
-        if (data.lang === "zh") {
+        // Translate title if Chinese (single API call for both titles)
+        if (data.lang === "zh" && data.chapterName) {
           try {
-            if (data.chapterName) {
-              const [cName,nName] = await Promise.all([translateTitle(
-                  data.chapterName,
-                  getApiKeyForModel(settings),
-                  settings.aiModel,
-                  "Dịch tiêu đề truyện sau từ tiếng Trung sang tiếng Việt (ưu tiên Hán Việt) phổ thông dễ hiểu. KHÔNG được để lại bất kỳ chữ Trung Quốc nào. Giữ nguyên dấu '-' phân cách giữa tên truyện và tên chương. Chỉ trả về bản dịch, không giải thích."
-              ),translateTitle(
-                  data.novelName,
-                  getApiKeyForModel(settings),
-                  settings.aiModel,
-                  "Dịch tiêu đề truyện sau từ tiếng Trung sang tiếng Việt (ưu tiên Hán Việt) phổ thông dễ hiểu. KHÔNG được để lại bất kỳ chữ Trung Quốc nào. Giữ nguyên dấu '-' phân cách giữa tên truyện và tên chương. Chỉ trả về bản dịch, không giải thích."
-              )]);
-
-              setChapterName(cName);
-              setNovelName(nName)
-              setTitle(cName);
-              data.chapterName = cName;
-              data.novelName = nName;
-            }
+            const translated = await translateTitles(
+              [data.chapterName, data.novelName],
+              getApiKeyForModel(settings),
+              settings.aiModel,
+              "Dịch tiêu đề truyện sau từ tiếng Trung sang tiếng Việt (ưu tiên Hán Việt) phổ thông dễ hiểu. KHÔNG được để lại bất kỳ chữ Trung Quốc nào. Giữ nguyên dấu '-' phân cách giữa tên truyện và tên chương. Chỉ trả về bản dịch, không giải thích."
+            );
+            const cName = translated[0] || data.chapterName;
+            const nName = translated[1] || data.novelName;
+            setChapterName(cName);
+            setNovelName(nName);
+            setTitle(cName);
+            data.chapterName = cName;
+            data.novelName = nName;
           } catch { /* keep original */ }
         }
 
