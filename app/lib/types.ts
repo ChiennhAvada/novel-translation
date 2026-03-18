@@ -22,12 +22,14 @@ export const AI_MODEL_OPTIONS: AIModelOption[] = [
     provider: "openai",
     label: "OpenAI",
     models: [
-      "gpt-4o",
-      "gpt-4o-mini",
+      "gpt-5.4",
+      "gpt-5.4-mini",
+      "gpt-5.4-nano",
       "gpt-4.1",
       "gpt-4.1-mini",
       "gpt-4.1-nano",
-      "gpt-4-turbo"
+      "gpt-4o",
+      "gpt-4o-mini",
     ],
   },
   {
@@ -42,10 +44,10 @@ export const AI_MODEL_OPTIONS: AIModelOption[] = [
     provider: "claude",
     label: "Anthropic Claude",
     models: [
-      "claude-opus-4-20250514",
-      "claude-sonnet-4-20250514",
-      "claude-sonnet-4-5-20241022",
+      "claude-opus-4-6-20260313",
+      "claude-sonnet-4-6-20260313",
       "claude-haiku-4-5-20251001",
+      "claude-sonnet-4-5-20250929"
     ],
   },
 ];
