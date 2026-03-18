@@ -197,6 +197,65 @@ export default function SettingsPanel({ settings, textColor, t, url, onUrlChange
         </div>
 
         <div>
+          <div
+            className="flex items-center justify-between gap-3 cursor-pointer"
+            onClick={() => onUpdate({ autoClearChapters: !settings.autoClearChapters })}
+          >
+            <span className="text-sm font-medium">{t.autoClearChapters}</span>
+            <div
+              className="relative w-11 h-6 rounded-full shrink-0 transition-colors duration-200"
+              style={{
+                backgroundColor: settings.autoClearChapters ? "#3b82f6" : textColor + "20",
+              }}
+            >
+              <div
+                className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200"
+                style={{
+                  transform: settings.autoClearChapters ? "translateX(22px)" : "translateX(2px)",
+                }}
+              />
+            </div>
+          </div>
+          {settings.autoClearChapters && (
+            <div className="flex items-center gap-2 mt-2">
+              <label className="text-xs" style={{ color: textColor + "70" }}>{t.autoClearChaptersKeep}:</label>
+              <input
+                type="number"
+                min={1}
+                max={999}
+                value={settings.autoClearChaptersKeep}
+                onChange={(e) => onUpdate({ autoClearChaptersKeep: Math.max(1, parseInt(e.target.value, 10) || 1) })}
+                onClick={(e) => e.stopPropagation()}
+                className="w-20 px-2 py-1 rounded border text-sm text-center"
+                style={{ backgroundColor: "transparent", borderColor: textColor + "30", color: textColor }}
+              />
+            </div>
+          )}
+        </div>
+
+        <div>
+          <div
+            className="flex items-center justify-between gap-3 cursor-pointer"
+            onClick={() => onUpdate({ autoClearNovels: !settings.autoClearNovels })}
+          >
+            <span className="text-sm font-medium">{t.autoClearNovels}</span>
+            <div
+              className="relative w-11 h-6 rounded-full shrink-0 transition-colors duration-200"
+              style={{
+                backgroundColor: settings.autoClearNovels ? "#3b82f6" : textColor + "20",
+              }}
+            >
+              <div
+                className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200"
+                style={{
+                  transform: settings.autoClearNovels ? "translateX(22px)" : "translateX(2px)",
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div>
           <p className="text-sm font-medium mb-1">{t.supportedSites}</p>
           <ul className="text-xs space-y-0.5" style={{ color: textColor + "70" }}>
             <li>

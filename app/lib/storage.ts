@@ -16,6 +16,9 @@ const DEFAULT_SETTINGS: ReaderSettings = {
   aiModel: "gemini-3-flash-preview",
   customPrompt: "",
   appLang: "vi",
+  autoClearChapters: false,
+  autoClearChaptersKeep: 20,
+  autoClearNovels: false,
 };
 
 // Extract novel slug from URL
@@ -74,13 +77,33 @@ export function getSavedChapters(): SavedChapter[] {
 }
 
 export function saveChapter(chapter: SavedChapter) {
-  const chapters = getSavedChapters();
+  let chapters = getSavedChapters();
   const existing = chapters.findIndex((c) => c.url === chapter.url);
   if (existing >= 0) {
     chapters[existing] = chapter;
   } else {
     chapters.unshift(chapter);
   }
+
+  const settings = getSettings();
+
+  // Auto-clear: keep only N newest chapters per novel
+  if (settings.autoClearChapters && settings.autoClearChaptersKeep > 0) {
+    const novelSlug = chapter.novelSlug;
+    const novelChapters = chapters.filter((c) => c.novelSlug === novelSlug);
+    if (novelChapters.length > settings.autoClearChaptersKeep) {
+      // Sort by savedAt desc, keep only the newest N
+      const sorted = novelChapters.sort((a, b) => b.savedAt - a.savedAt);
+      const toRemove = new Set(sorted.slice(settings.autoClearChaptersKeep).map((c) => c.url));
+      chapters = chapters.filter((c) => c.novelSlug !== novelSlug || !toRemove.has(c.url));
+    }
+  }
+
+  // Auto-clear: keep only the current novel, remove all others
+  if (settings.autoClearNovels) {
+    chapters = chapters.filter((c) => c.novelSlug === chapter.novelSlug);
+  }
+
   localStorage.setItem(STORAGE_KEY, JSON.stringify(chapters));
 }
 

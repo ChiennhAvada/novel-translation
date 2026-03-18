@@ -61,6 +61,9 @@ export interface ReaderSettings {
   aiModel: string;
   customPrompt: string;
   appLang: "en" | "vi";
+  autoClearChapters: boolean;
+  autoClearChaptersKeep: number;
+  autoClearNovels: boolean;
 }
 
 export function getProviderForModel(model: string): AIProvider {

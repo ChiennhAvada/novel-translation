@@ -33,6 +33,9 @@ const translations = {
     supportedSites: "Supported websites",
     language: "Language",
     linkHelpText: "e.g.",
+    autoClearChapters: "Auto-clear old chapters per novel",
+    autoClearChaptersKeep: "Chapters to keep",
+    autoClearNovels: "Auto-clear other novels (keep only current novel)",
   },
   vi: {
     appTitle: "Dịch Truyện",
@@ -66,6 +69,9 @@ const translations = {
     supportedSites: "Trang web hỗ trợ",
     language: "Ngôn ngữ",
     linkHelpText: "VD:",
+    autoClearChapters: "Tự động xóa chương cũ theo truyện",
+    autoClearChaptersKeep: "Số chương giữ lại",
+    autoClearNovels: "Tự động xóa truyện khác (chỉ giữ truyện hiện tại)",
   },
 } as const;
 

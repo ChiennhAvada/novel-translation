@@ -47,6 +47,9 @@ export default function Home() {
     aiModel: "gemini-3-flash-preview",
     customPrompt: "",
     appLang: "vi",
+    autoClearChapters: false,
+    autoClearChaptersKeep: 20,
+    autoClearNovels: false,
   });
   const [showScrollTop, setShowScrollTop] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
