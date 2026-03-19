@@ -75,10 +75,11 @@ export default function Home() {
         setPrevUrl(chapter.prevUrl || null);
         setNextUrl(chapter.nextUrl || null);
         // Restore scroll position after content renders
-        requestAnimationFrame(() => {
+        // Use setTimeout to wait for React to render the content
+        setTimeout(() => {
           const saved = getScrollPosition(currentUrl);
           if (saved) window.scrollTo(0, saved);
-        });
+        }, 100);
       } else {
         setUrl(currentUrl);
       }
@@ -96,10 +97,18 @@ export default function Home() {
         saveScrollPosition(url, window.scrollY);
       }, 300);
     };
+    // Save scroll immediately when user leaves/minimizes (reliable on mobile)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden" && url) {
+        saveScrollPosition(url, window.scrollY);
+      }
+    };
     window.addEventListener("scroll", handleScroll, { passive: true });
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
       clearTimeout(timer);
       window.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [url]);
 
