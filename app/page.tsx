@@ -338,7 +338,7 @@ export default function Home() {
           </div>
         </div>
 
-        {activePanel === "mass-translate" && (
+        <div style={{ display: activePanel === "mass-translate" ? "block" : "none" }}>
           <MassTranslatePanel
             settings={settings}
             textColor={textColor}
@@ -346,7 +346,7 @@ export default function Home() {
             onUpdate={updateSettings}
             onComplete={refreshSaved}
           />
-        )}
+        </div>
 
         {activePanel === "ai-settings" && (
           <AISettingsPanel
