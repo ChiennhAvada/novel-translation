@@ -61,7 +61,7 @@ export default function SettingsPanel({ settings, textColor, t, url, onUrlChange
               rel="noopener noreferrer"
               className="underline hover:opacity-70"
             >
-              quanben.io/n/yuanlaiwoshixiuxiandalao/1.html
+              https://quanben.io/n/yuanlaiwoshixiuxiandalao/1.html
             </a>
           </p>
         </div>
@@ -258,9 +258,14 @@ export default function SettingsPanel({ settings, textColor, t, url, onUrlChange
         <div>
           <p className="text-sm font-medium mb-1">{t.supportedSites}</p>
           <ul className="text-xs space-y-0.5" style={{ color: textColor + "70" }}>
-            <li>
-              <a href="https://www.quanben.io" target="_blank" rel="noopener noreferrer" className="underline cursor-pointer hover:opacity-70">quanben.io</a> (Chinese novels)
-            </li>
+            {[
+              { domain: "quanben.io", label: "Chinese novels" },
+              { domain: "22biqu.com", label: "Chinese novels" },
+            ].map(({ domain, label }) => (
+              <li key={domain}>
+                <a href={`https://www.${domain}`} target="_blank" rel="noopener noreferrer" className="underline cursor-pointer hover:opacity-70">{domain}</a> ({label})
+              </li>
+            ))}
           </ul>
         </div>
       </div>

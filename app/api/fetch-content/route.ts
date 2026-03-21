@@ -7,23 +7,11 @@ interface SiteConfig {
 }
 
 const SITE_SELECTORS: Record<string, SiteConfig> = {
-  "webnovel.vn": {
-    content: ".reader__content",
-  },
-  "tvtruyen.com": {
-    content: "#chapter-content",
-  },
-  "69shuba": {
-    content: "div.txtnav",
-    lang: "zh",
-    removeSelectors: ["h1", "div.txtinfo", "div#txtright", "script", ".ad", ".ads"],
-  },
-  "69shu": {
-    content: "div.txtnav",
-    lang: "zh",
-    removeSelectors: ["h1", "div.txtinfo", "div#txtright", "script", ".ad", ".ads"],
-  },
   "quanben.io": {
+    content: "#content",
+    lang: "zh",
+  },
+  "22biqu.com": {
     content: "#content",
     lang: "zh",
   },
@@ -227,29 +215,35 @@ export async function POST(req: Request) {
     const titleStr = result.fullTitle || result.h1 || "";
 
     if (siteConfig.lang === "zh") {
-      // H1 is always the chapter title
-      chapterName = result.h1 || "";
+      // Try splitting title by common separators: "_" or " - "
+      // 22biqu:   "第2章 飞剑_叩问仙道_笔趣阁"  → chapter_novel_site
+      // quanben:  "第1章 山边小村 凡人修仙传 - 全本小说网" → h1 + novel - site
+      const underscoreParts = result.fullTitle.split("_");
+      if (underscoreParts.length >= 3) {
+        // Format: chapterName_novelName_siteName
+        chapterName = underscoreParts[0].trim();
+        novelName = underscoreParts[1].trim();
+      } else {
+        // H1 is the chapter title (quanben style)
+        chapterName = result.h1 || "";
 
-      // Derive novel name: remove h1 and site name from full title
-      // e.g. "第1章 山边小村 凡人修仙传 - 全本小说网" with h1="第1章 山边小村"
-      //   → remove h1 → "凡人修仙传 - 全本小说网" → remove site → "凡人修仙传"
-      if (result.fullTitle && chapterName) {
-        let remaining = result.fullTitle;
-        // Remove chapter part (h1)
-        remaining = remaining.replace(chapterName, "").trim();
-        // Remove site name (after " - ")
-        remaining = remaining.split(" - ")[0].trim();
-        if (remaining) novelName = remaining;
-      }
+        // Derive novel name: remove h1 and site name from full title
+        if (result.fullTitle && chapterName) {
+          let remaining = result.fullTitle;
+          remaining = remaining.replace(chapterName, "").trim();
+          remaining = remaining.split(" - ")[0].trim();
+          if (remaining) novelName = remaining;
+        }
 
-      // Fallback: if title has " - " pattern like "Novel - Chapter - Site"
-      if (!novelName && !chapterName) {
-        const parts = titleStr.split(" - ");
-        if (parts.length >= 2) {
-          novelName = parts[0].trim();
-          chapterName = parts[1].trim();
-        } else {
-          chapterName = titleStr;
+        // Fallback: if title has " - " pattern like "Novel - Chapter - Site"
+        if (!novelName && !chapterName) {
+          const parts = titleStr.split(" - ");
+          if (parts.length >= 2) {
+            novelName = parts[0].trim();
+            chapterName = parts[1].trim();
+          } else {
+            chapterName = titleStr;
+          }
         }
       }
     }

@@ -16,7 +16,7 @@ const DEFAULT_SETTINGS: ReaderSettings = {
   aiModel: "gemini-3-flash-preview",
   customPrompt: "",
   appLang: "vi",
-  autoClearChapters: false,
+  autoClearChapters: true,
   autoClearChaptersKeep: 20,
   autoClearNovels: false,
 };
@@ -40,6 +40,11 @@ export function extractNovelSlug(url: string): string {
     if (url.includes("quanben.io")) {
       const nIdx = parts.indexOf("n");
       if (nIdx >= 0 && parts[nIdx + 1]) return parts[nIdx + 1];
+    }
+
+    // 22biqu.com: /biqu59699/30115507.html → biqu59699
+    if (url.includes("22biqu.com")) {
+      if (parts.length >= 1) return parts[0];
     }
 
     // 69shuba.com: /txt/NOVEL_ID/CHAPTER_ID → NOVEL_ID
@@ -82,6 +87,14 @@ export function saveChapter(chapter: SavedChapter) {
   if (existing >= 0) {
     chapters[existing] = chapter;
   } else {
+    // Deduplicate chapter title within the same novel
+    const baseTitle = chapter.title;
+    const sameNameCount = chapters.filter(
+      (c) => c.novelSlug === chapter.novelSlug && c.title === baseTitle
+    ).length;
+    if (sameNameCount > 0) {
+      chapter = { ...chapter, title: `${baseTitle} (${sameNameCount + 1})` };
+    }
     chapters.unshift(chapter);
   }
 
