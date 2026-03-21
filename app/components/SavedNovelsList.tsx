@@ -73,15 +73,18 @@ export default function SavedNovelsList({
                 borderColor: textColor + "10",
                 backgroundColor:
                   novel.slug === currentNovelSlug
-                    ? textColor + "08"
+                    ? "#3b82f6" + "20"
                     : "transparent",
+                borderLeft: novel.slug === currentNovelSlug
+                  ? "3px solid #3b82f6"
+                  : "3px solid transparent",
               }}
             >
               <button
                 onClick={() => onSelectNovel(novel.slug)}
                 className="text-left flex-1 cursor-pointer rounded-lg px-2 py-1 transition-colors hover:opacity-70"
               >
-                <p className="text-sm font-medium">{novel.name}</p>
+                <p className="text-sm font-medium" style={{ color: novel.slug === currentNovelSlug ? "#3b82f6" : undefined }}>{novel.name}</p>
                 <p className="text-xs" style={{ color: textColor + "60" }}>
                   {novel.chapterCount} {t.chapters.toLowerCase()}
                 </p>

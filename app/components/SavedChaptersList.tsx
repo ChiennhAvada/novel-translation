@@ -9,6 +9,7 @@ interface Props {
   chapters: SavedChapter[];
   settings: ReaderSettings;
   textColor: string;
+  currentUrl: string | null;
   t: Translations;
   onLoad: (chapter: SavedChapter) => void;
 }
@@ -17,6 +18,7 @@ export default function SavedChaptersList({
   chapters,
   settings,
   textColor,
+  currentUrl,
   t,
   onLoad,
 }: Props) {
@@ -64,23 +66,30 @@ export default function SavedChaptersList({
             {t.noChapters}
           </p>
         ) : (
-          filtered.map((ch) => (
+          filtered.map((ch) => {
+            const isActive = ch.url === currentUrl;
+            return (
             <div
               key={ch.url}
               className="flex items-center px-3 sm:px-4 py-3 border-b last:border-b-0"
-              style={{ borderColor: textColor + "10" }}
+              style={{
+                borderColor: textColor + "10",
+                backgroundColor: isActive ? "#3b82f6" + "20" : "transparent",
+                borderLeft: isActive ? "3px solid #3b82f6" : "3px solid transparent",
+              }}
             >
               <button
                 onClick={() => onLoad(ch)}
                 className="text-left flex-1 cursor-pointer rounded-lg px-2 py-1 transition-colors hover:opacity-70"
               >
-                <p className="text-sm font-medium truncate">{ch.title}</p>
+                <p className="text-sm font-medium truncate" style={{ color: isActive ? "#3b82f6" : undefined }}>{ch.title}</p>
                 <p className="text-xs" style={{ color: textColor + "60" }}>
                   {new Date(ch.savedAt).toLocaleString()}
                 </p>
               </button>
             </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

@@ -391,6 +391,7 @@ export default function Home() {
             chapters={currentNovelChapters}
             settings={settings}
             textColor={textColor}
+            currentUrl={url}
             t={t}
             onLoad={loadSavedChapter}
           />
