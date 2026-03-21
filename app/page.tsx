@@ -418,7 +418,14 @@ export default function Home() {
           </div>
         </div>
 
-        <div style={{ display: activePanel === "mass-translate" ? "block" : "none" }}>
+        {activePanel !== "none" && (
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setActivePanel("none")}
+          />
+        )}
+
+        <div className="relative z-20" style={{ display: activePanel === "mass-translate" ? "block" : "none" }}>
           <MassTranslatePanel
             settings={settings}
             textColor={textColor}
@@ -429,56 +436,63 @@ export default function Home() {
         </div>
 
         {activePanel === "ai-settings" && (
-          <AISettingsPanel
-            settings={settings}
-            textColor={textColor}
-            t={t}
-            onUpdate={updateSettings}
-          />
+          <div className="relative z-20">
+            <AISettingsPanel
+              settings={settings}
+              textColor={textColor}
+              t={t}
+              onUpdate={updateSettings}
+            />
+          </div>
         )}
 
         {activePanel === "settings" && (
-          <SettingsPanel
-            settings={settings}
-            textColor={textColor}
-            t={t}
-            url={url}
-            onUrlChange={setUrl}
-            onTranslate={() => {
-              setActivePanel("none");
-              handleFetchAndSimplify();
-            }}
-            isLoading={isLoading}
-            buttonLabel={buttonLabel}
-            onUpdate={updateSettings}
-          />
+          <div className="relative z-20">
+            <SettingsPanel
+              settings={settings}
+              textColor={textColor}
+              t={t}
+              url={url}
+              onUrlChange={setUrl}
+              onTranslate={() => {
+                setActivePanel("none");
+                handleFetchAndSimplify();
+              }}
+              isLoading={isLoading}
+              buttonLabel={buttonLabel}
+              onUpdate={updateSettings}
+            />
+          </div>
         )}
 
         {activePanel === "novels" && (
-          <SavedNovelsList
-            chapters={savedChapters}
-            settings={settings}
-            textColor={textColor}
-            currentNovelSlug={currentNovelSlug}
-            t={t}
-            onSelectNovel={handleSelectNovel}
-            onClearNovel={handleClearNovel}
-          />
+          <div className="relative z-20">
+            <SavedNovelsList
+              chapters={savedChapters}
+              settings={settings}
+              textColor={textColor}
+              currentNovelSlug={currentNovelSlug}
+              t={t}
+              onSelectNovel={handleSelectNovel}
+              onClearNovel={handleClearNovel}
+            />
+          </div>
         )}
 
         {activePanel === "chapters" && (
-          <SavedChaptersList
-            chapters={currentNovelChapters}
-            settings={settings}
-            textColor={textColor}
-            currentUrl={url}
-            t={t}
-            onLoad={loadSavedChapter}
-          />
+          <div className="relative z-20">
+            <SavedChaptersList
+              chapters={currentNovelChapters}
+              settings={settings}
+              textColor={textColor}
+              currentUrl={url}
+              t={t}
+              onLoad={loadSavedChapter}
+            />
+          </div>
         )}
 
-        {/* Click outside panels to close them */}
-        <div onClick={() => { if (activePanel !== "none") setActivePanel("none"); }}>
+        <div>
           {(novelName || chapterName || title) && (
             <div className="text-center mb-4">
               {novelName && (
