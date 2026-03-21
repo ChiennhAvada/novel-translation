@@ -278,6 +278,11 @@ export default function MassTranslatePanel({ settings, textColor, t, onUpdate, o
   const handleStart = useCallback(async () => {
     if (chapters.length === 0 || isRunning || !apiKey?.trim()) return;
 
+    // Disable auto-clear to preserve all mass-translated chapters
+    if (settings.autoClearChapters || settings.autoClearNovels) {
+      onUpdate({ autoClearChapters: false, autoClearNovels: false });
+    }
+
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
