@@ -13,6 +13,7 @@ import {
   saveSettings,
   getScrollPosition,
   saveScrollPosition,
+  deduplicateTitle,
 } from "./lib/storage";
 import { fetchChapterContent, simplifyText, translateTitles } from "./lib/api";
 import SettingsPanel from "./components/SettingsPanel";
@@ -187,11 +188,19 @@ export default function Home() {
           } catch { /* keep original */ }
         }
 
+        const chapterSlug = extractNovelSlug(fetchUrl);
+        const dedupedTitle = deduplicateTitle(
+          data.chapterName || chapterTitle || fetchUrl,
+          chapterSlug
+        );
+        setChapterName(dedupedTitle);
+        setTitle(dedupedTitle);
+
         saveChapter({
           url: fetchUrl,
-          title: data.chapterName || chapterTitle || fetchUrl,
+          title: dedupedTitle,
           novelName: data.novelName || "",
-          novelSlug: extractNovelSlug(fetchUrl),
+          novelSlug: chapterSlug,
           simplifiedText: result,
           prevUrl: data.prevUrl,
           nextUrl: data.nextUrl,

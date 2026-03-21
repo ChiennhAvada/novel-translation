@@ -81,20 +81,21 @@ export function getSavedChapters(): SavedChapter[] {
   }
 }
 
+export function deduplicateTitle(title: string, novelSlug: string, chapters?: SavedChapter[]): string {
+  const all = chapters ?? getSavedChapters();
+  const sameNameCount = all.filter(
+    (c) => c.novelSlug === novelSlug && c.title === title
+  ).length;
+  return sameNameCount > 0 ? `${title} (${sameNameCount + 1})` : title;
+}
+
 export function saveChapter(chapter: SavedChapter) {
   let chapters = getSavedChapters();
   const existing = chapters.findIndex((c) => c.url === chapter.url);
   if (existing >= 0) {
     chapters[existing] = chapter;
   } else {
-    // Deduplicate chapter title within the same novel
-    const baseTitle = chapter.title;
-    const sameNameCount = chapters.filter(
-      (c) => c.novelSlug === chapter.novelSlug && c.title === baseTitle
-    ).length;
-    if (sameNameCount > 0) {
-      chapter = { ...chapter, title: `${baseTitle} (${sameNameCount + 1})` };
-    }
+    chapter = { ...chapter, title: deduplicateTitle(chapter.title, chapter.novelSlug, chapters) };
     chapters.unshift(chapter);
   }
 
