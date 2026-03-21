@@ -288,8 +288,14 @@ export default function Home() {
       ? t.simplifying
       : t.translate;
   const textColor = getTextColor(settings.bgColor);
+  const [menuOpen, setMenuOpen] = useState(false);
   const btnStyle = { borderColor: textColor + "30", color: textColor, backgroundColor: settings.bgColor };
   const btnClass = "panel-btn px-3 py-1.5 rounded-lg text-sm font-medium border transition-all cursor-pointer";
+
+  function handleMenuAction(panel: Panel) {
+    togglePanel(panel);
+    setMenuOpen(false);
+  }
 
   return (
     <main
@@ -297,45 +303,118 @@ export default function Home() {
       style={{ backgroundColor: settings.bgColor, color: textColor }}
     >
       <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+        <div className="flex items-center justify-between gap-2 mb-4">
           <h1 className="text-lg sm:text-xl font-bold">{t.appTitle}</h1>
-          <div className="flex gap-1.5 sm:gap-2">
+
+          {/* Desktop buttons */}
+          <div className="hidden sm:flex gap-2">
             <button
               onClick={() => togglePanel("chapters")}
               disabled={!currentNovelSlug || currentNovelChapters.length === 0}
-              className={btnClass + " text-xs sm:text-sm disabled:opacity-30 disabled:cursor-not-allowed" + (activePanel === "chapters" ? " active" : "")}
+              className={btnClass + " text-sm disabled:opacity-30 disabled:cursor-not-allowed" + (activePanel === "chapters" ? " active" : "")}
               style={btnStyle}
             >
               {t.chapters} ({currentNovelChapters.length})
             </button>
             <button
               onClick={() => togglePanel("novels")}
-              className={btnClass + " text-xs sm:text-sm" + (activePanel === "novels" ? " active" : "")}
+              className={btnClass + " text-sm" + (activePanel === "novels" ? " active" : "")}
               style={btnStyle}
             >
               {t.novels}
             </button>
             <button
               onClick={() => togglePanel("mass-translate")}
-              className={btnClass + " text-xs sm:text-sm" + (activePanel === "mass-translate" ? " active" : "")}
+              className={btnClass + " text-sm" + (activePanel === "mass-translate" ? " active" : "")}
               style={btnStyle}
             >
               {t.massTranslate}
             </button>
             <button
               onClick={() => togglePanel("ai-settings")}
-              className={btnClass + " text-xs sm:text-sm" + (activePanel === "ai-settings" ? " active" : "")}
+              className={btnClass + " text-sm" + (activePanel === "ai-settings" ? " active" : "")}
               style={btnStyle}
             >
               {t.aiSettings}
             </button>
             <button
               onClick={() => togglePanel("settings")}
-              className={btnClass + " text-xs sm:text-sm" + (activePanel === "settings" ? " active" : "")}
+              className={btnClass + " text-sm" + (activePanel === "settings" ? " active" : "")}
               style={btnStyle}
             >
               {t.settings}
             </button>
+          </div>
+
+          {/* Mobile hamburger menu */}
+          <div className="relative sm:hidden">
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className={btnClass + (menuOpen ? " active" : "")}
+              style={btnStyle}
+              aria-label={t.menu}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {menuOpen ? (
+                  <>
+                    <path d="M18 6L6 18" />
+                    <path d="M6 6l12 12" />
+                  </>
+                ) : (
+                  <>
+                    <path d="M3 12h18" />
+                    <path d="M3 6h18" />
+                    <path d="M3 18h18" />
+                  </>
+                )}
+              </svg>
+            </button>
+            {menuOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+                <div
+                  className="absolute right-0 top-full mt-2 z-50 rounded-lg border shadow-lg min-w-48 py-1 flex flex-col"
+                  style={{ borderColor: textColor + "20", backgroundColor: settings.bgColor }}
+                >
+                  <button
+                    onClick={() => handleMenuAction("chapters")}
+                    disabled={!currentNovelSlug || currentNovelChapters.length === 0}
+                    className={"px-4 py-2.5 text-sm text-left transition-all disabled:opacity-30 disabled:cursor-not-allowed" + (activePanel === "chapters" ? " font-bold" : "")}
+                    style={{ color: textColor, backgroundColor: activePanel === "chapters" ? textColor + "10" : "transparent" }}
+                  >
+                    {t.chapters} ({currentNovelChapters.length})
+                  </button>
+                  <button
+                    onClick={() => handleMenuAction("novels")}
+                    className={"px-4 py-2.5 text-sm text-left transition-all" + (activePanel === "novels" ? " font-bold" : "")}
+                    style={{ color: textColor, backgroundColor: activePanel === "novels" ? textColor + "10" : "transparent" }}
+                  >
+                    {t.novels}
+                  </button>
+                  <button
+                    onClick={() => handleMenuAction("mass-translate")}
+                    className={"px-4 py-2.5 text-sm text-left transition-all" + (activePanel === "mass-translate" ? " font-bold" : "")}
+                    style={{ color: textColor, backgroundColor: activePanel === "mass-translate" ? textColor + "10" : "transparent" }}
+                  >
+                    {t.massTranslate}
+                  </button>
+                  <button
+                    onClick={() => handleMenuAction("ai-settings")}
+                    className={"px-4 py-2.5 text-sm text-left transition-all" + (activePanel === "ai-settings" ? " font-bold" : "")}
+                    style={{ color: textColor, backgroundColor: activePanel === "ai-settings" ? textColor + "10" : "transparent" }}
+                  >
+                    {t.aiSettings}
+                  </button>
+                  <button
+                    onClick={() => handleMenuAction("settings")}
+                    className={"px-4 py-2.5 text-sm text-left transition-all" + (activePanel === "settings" ? " font-bold" : "")}
+                    style={{ color: textColor, backgroundColor: activePanel === "settings" ? textColor + "10" : "transparent" }}
+                  >
+                    {t.settings}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -398,32 +477,35 @@ export default function Home() {
           />
         )}
 
-        {(novelName || chapterName || title) && (
-          <div className="text-center mb-4">
-            {novelName && (
-              <h2 className="text-lg font-semibold">{novelName}</h2>
-            )}
-            {chapterName && (
-              <p className="text-sm mt-1" style={{ color: textColor + "80" }}>{chapterName}</p>
-            )}
-            {!novelName && !chapterName && title && (
-              <h2 className="text-lg font-semibold">{title}</h2>
+        {/* Click outside panels to close them */}
+        <div onClick={() => { if (activePanel !== "none") setActivePanel("none"); }}>
+          {(novelName || chapterName || title) && (
+            <div className="text-center mb-4">
+              {novelName && (
+                <h2 className="text-lg font-semibold">{novelName}</h2>
+              )}
+              {chapterName && (
+                <p className="text-sm mt-1" style={{ color: textColor + "80" }}>{chapterName}</p>
+              )}
+              {!novelName && !chapterName && title && (
+                <h2 className="text-lg font-semibold">{title}</h2>
+              )}
+            </div>
+          )}
+
+          <NavButtons prevUrl={prevUrl} nextUrl={nextUrl} disabled={isLoading || !getApiKeyForModel(settings)?.trim()} textColor={textColor} prevLabel={t.previous} nextLabel={t.next} onNavigate={navigateToChapter} />
+
+          <div
+            className="min-h-[60vh] px-1 sm:px-2 py-4 whitespace-pre-wrap"
+            style={{ fontSize: `${settings.fontSize}px`, lineHeight: settings.lineSpacing }}
+          >
+            {simplifiedText || (
+              <span style={{ color: textColor + "40" }}>{t.contentPlaceholder}</span>
             )}
           </div>
-        )}
 
-        <NavButtons prevUrl={prevUrl} nextUrl={nextUrl} disabled={isLoading || !getApiKeyForModel(settings)?.trim()} textColor={textColor} prevLabel={t.previous} nextLabel={t.next} onNavigate={navigateToChapter} />
-
-        <div
-          className="min-h-[60vh] px-1 sm:px-2 py-4 whitespace-pre-wrap"
-          style={{ fontSize: `${settings.fontSize}px`, lineHeight: settings.lineSpacing }}
-        >
-          {simplifiedText || (
-            <span style={{ color: textColor + "40" }}>{t.contentPlaceholder}</span>
-          )}
+          <NavButtons prevUrl={prevUrl} nextUrl={nextUrl} disabled={isLoading || !getApiKeyForModel(settings)?.trim()} textColor={textColor} prevLabel={t.previous} nextLabel={t.next} onNavigate={navigateToChapter} />
         </div>
-
-        <NavButtons prevUrl={prevUrl} nextUrl={nextUrl} disabled={isLoading || !getApiKeyForModel(settings)?.trim()} textColor={textColor} prevLabel={t.previous} nextLabel={t.next} onNavigate={navigateToChapter} />
       </div>
 
       {showScrollTop && (

@@ -57,6 +57,7 @@ const translations = {
     chaptersFound: "chapters found",
     fetchingToc: "Fetching TOC...",
     massTranslateFetchingChapter: "Fetching",
+    menu: "Menu",
   },
   vi: {
     appTitle: "Dịch Truyện",
@@ -114,6 +115,7 @@ const translations = {
     chaptersFound: "chương tìm thấy",
     fetchingToc: "Đang tải mục lục...",
     massTranslateFetchingChapter: "Đang tải",
+    menu: "Menu",
   },
 } as const;
 
