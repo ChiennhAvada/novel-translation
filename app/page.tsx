@@ -47,7 +47,7 @@ export default function Home() {
     aiModel: "gemini-3-flash-preview",
     customPrompt: "",
     appLang: "vi",
-    autoClearChapters: false,
+    autoClearChapters: true,
     autoClearChaptersKeep: 20,
     autoClearNovels: false,
   });
