@@ -11,8 +11,12 @@ const SITE_SELECTORS: Record<string, SiteConfig> = {
     content: "#content",
     lang: "zh",
   },
-  "22biqu.com": {
+  "www.22biqu.com": {
     content: "#content",
+    lang: "zh",
+  },
+  "m.22biqu.com": {
+    content: "#chaptercontent",
     lang: "zh",
   },
 };
