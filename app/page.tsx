@@ -21,9 +21,10 @@ import AISettingsPanel from "./components/AISettingsPanel";
 import SavedChaptersList from "./components/SavedChaptersList";
 import SavedNovelsList from "./components/SavedNovelsList";
 import NavButtons from "./components/NavButtons";
+import MassTranslatePanel from "./components/MassTranslatePanel";
 import { getTranslations } from "./lib/i18n";
 
-type Panel = "none" | "chapters" | "novels" | "settings" | "ai-settings";
+type Panel = "none" | "chapters" | "novels" | "settings" | "ai-settings" | "mass-translate";
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -51,6 +52,8 @@ export default function Home() {
     autoClearChapters: true,
     autoClearChaptersKeep: 20,
     autoClearNovels: false,
+    massTranslateMode: "one-by-one",
+    massTranslateGroupSize: 3,
   });
   const [showScrollTop, setShowScrollTop] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
@@ -312,6 +315,13 @@ export default function Home() {
               {t.novels}
             </button>
             <button
+              onClick={() => togglePanel("mass-translate")}
+              className={btnClass + " text-xs sm:text-sm" + (activePanel === "mass-translate" ? " active" : "")}
+              style={btnStyle}
+            >
+              {t.massTranslate}
+            </button>
+            <button
               onClick={() => togglePanel("ai-settings")}
               className={btnClass + " text-xs sm:text-sm" + (activePanel === "ai-settings" ? " active" : "")}
               style={btnStyle}
@@ -327,6 +337,16 @@ export default function Home() {
             </button>
           </div>
         </div>
+
+        {activePanel === "mass-translate" && (
+          <MassTranslatePanel
+            settings={settings}
+            textColor={textColor}
+            t={t}
+            onUpdate={updateSettings}
+            onComplete={refreshSaved}
+          />
+        )}
 
         {activePanel === "ai-settings" && (
           <AISettingsPanel

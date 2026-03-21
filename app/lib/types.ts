@@ -52,6 +52,14 @@ export const AI_MODEL_OPTIONS: AIModelOption[] = [
   },
 ];
 
+export type MassTranslateMode = "one-by-one" | "batch-together" | "batch-in-groups";
+
+export interface TOCChapter {
+  index: number;
+  title: string;
+  url: string;
+}
+
 export interface ReaderSettings {
   bgColor: string;
   fontSize: number;
@@ -66,6 +74,8 @@ export interface ReaderSettings {
   autoClearChapters: boolean;
   autoClearChaptersKeep: number;
   autoClearNovels: boolean;
+  massTranslateMode: MassTranslateMode;
+  massTranslateGroupSize: number;
 }
 
 export function getProviderForModel(model: string): AIProvider {

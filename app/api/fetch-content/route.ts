@@ -37,29 +37,37 @@ function getSiteConfig(url: string) {
   return null;
 }
 
-function extractNav($: cheerio.CheerioAPI): { prevUrl: string | null; nextUrl: string | null } {
-  let prevUrl: string | null = null;
-  let nextUrl: string | null = null;
+interface NavResult {
+  prevChapter: string | null;
+  nextChapter: string | null;
+  nextPage: string | null; // sub-page within same chapter (e.g. _2.html)
+  prevPage: string | null;
+}
+
+function extractNav($: cheerio.CheerioAPI): NavResult {
+  const nav: NavResult = { prevChapter: null, nextChapter: null, nextPage: null, prevPage: null };
 
   const relPrev = $('a[rel="prev"]').attr("href");
   const relNext = $('a[rel="next"]').attr("href");
-  if (relPrev) prevUrl = relPrev;
-  if (relNext) nextUrl = relNext;
+  if (relPrev) nav.prevChapter = relPrev;
+  if (relNext) nav.nextChapter = relNext;
 
-  if (!prevUrl || !nextUrl) {
-    $("a").each((_, el) => {
-      const text = $(el).text().trim();
-      const href = $(el).attr("href");
-      if (!href) return;
-      if (!prevUrl && (text === "Chương trước" || text === "上一章" || text === "上一页")) prevUrl = href;
-      if (!nextUrl && (text === "Tiếp theo" || text === "Chương sau" || text === "下一章" || text === "下一页")) nextUrl = href;
-    });
-  }
+  $("a").each((_, el) => {
+    const text = $(el).text().trim();
+    const href = $(el).attr("href");
+    if (!href) return;
+    // Chapter-level navigation
+    if (!nav.prevChapter && (text === "Chương trước" || text === "上一章")) nav.prevChapter = href;
+    if (!nav.nextChapter && (text === "Tiếp theo" || text === "Chương sau" || text === "下一章")) nav.nextChapter = href;
+    // Sub-page navigation (within same chapter)
+    if (!nav.nextPage && text === "下一页") nav.nextPage = href;
+    if (!nav.prevPage && text === "上一页") nav.prevPage = href;
+  });
 
-  if (!prevUrl) prevUrl = $("a.truoc").attr("href") || null;
-  if (!nextUrl) nextUrl = $("a.sau").attr("href") || null;
+  if (!nav.prevChapter) nav.prevChapter = $("a.truoc").attr("href") || null;
+  if (!nav.nextChapter) nav.nextChapter = $("a.sau").attr("href") || null;
 
-  return { prevUrl, nextUrl };
+  return nav;
 }
 
 function extractTitles($: cheerio.CheerioAPI): { fullTitle: string; h1: string } {
@@ -85,13 +93,19 @@ function parseHtml(html: string, siteConfig: SiteConfig, baseUrl: string) {
 
   const text = contentEl.text();
   const { fullTitle, h1 } = extractTitles($);
-  let { prevUrl, nextUrl } = extractNav($);
+  const nav = extractNav($);
 
   const origin = new URL(baseUrl).origin;
-  if (prevUrl && !prevUrl.startsWith("http")) prevUrl = origin + prevUrl;
-  if (nextUrl && !nextUrl.startsWith("http")) nextUrl = origin + nextUrl;
+  const abs = (u: string | null) => u && !u.startsWith("http") ? origin + u : u;
 
-  return { text, fullTitle, h1, prevUrl, nextUrl };
+  return {
+    text,
+    fullTitle,
+    h1,
+    prevUrl: abs(nav.prevChapter),
+    nextUrl: abs(nav.nextChapter),
+    nextPageUrl: abs(nav.nextPage),
+  };
 }
 
 async function fetchWithCheerio(url: string): Promise<string | null> {
@@ -208,7 +222,29 @@ export async function POST(req: Request) {
       );
     }
 
-    const cleaned = result.text
+    // Follow sub-pages (e.g. 22biqu splits chapters into _2.html, _3.html)
+    let fullText = result.text;
+    let nextPageUrl = result.nextPageUrl;
+    let finalNextUrl = result.nextUrl;
+    const maxSubPages = 20;
+    let subPage = 0;
+
+    while (nextPageUrl && subPage < maxSubPages) {
+      const subHtml = await fetchWithCheerio(nextPageUrl);
+      if (!subHtml) break;
+      const subResult = parseHtml(subHtml, siteConfig, nextPageUrl);
+      if (!subResult || !subResult.text.trim()) break;
+      fullText += "\n" + subResult.text;
+      // The last sub-page has the real "next chapter" link
+      if (subResult.nextUrl) finalNextUrl = subResult.nextUrl;
+      nextPageUrl = subResult.nextPageUrl;
+      subPage++;
+    }
+
+    // Use the first page's prevUrl, and the last sub-page's nextUrl (next chapter)
+    if (finalNextUrl) result.nextUrl = finalNextUrl;
+
+    const cleaned = fullText
       .replace(/\r\n/g, "\n")
       .replace(/[ \t]+\n/g, "\n")
       .replace(/\n{3,}/g, "\n\n")

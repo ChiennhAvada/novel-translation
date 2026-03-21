@@ -19,6 +19,8 @@ const DEFAULT_SETTINGS: ReaderSettings = {
   autoClearChapters: true,
   autoClearChaptersKeep: 20,
   autoClearNovels: false,
+  massTranslateMode: "one-by-one",
+  massTranslateGroupSize: 3,
 };
 
 // Extract novel slug from URL
@@ -89,7 +91,7 @@ export function deduplicateTitle(title: string, novelSlug: string, chapters?: Sa
   return sameNameCount > 0 ? `${title} (${sameNameCount + 1})` : title;
 }
 
-export function saveChapter(chapter: SavedChapter) {
+export function saveChapter(chapter: SavedChapter, skipAutoClear?: boolean) {
   let chapters = getSavedChapters();
   const existing = chapters.findIndex((c) => c.url === chapter.url);
   if (existing >= 0) {
@@ -99,23 +101,24 @@ export function saveChapter(chapter: SavedChapter) {
     chapters.unshift(chapter);
   }
 
-  const settings = getSettings();
+  if (!skipAutoClear) {
+    const settings = getSettings();
 
-  // Auto-clear: keep only N newest chapters per novel
-  if (settings.autoClearChapters && settings.autoClearChaptersKeep > 0) {
-    const novelSlug = chapter.novelSlug;
-    const novelChapters = chapters.filter((c) => c.novelSlug === novelSlug);
-    if (novelChapters.length > settings.autoClearChaptersKeep) {
-      // Sort by savedAt desc, keep only the newest N
-      const sorted = novelChapters.sort((a, b) => b.savedAt - a.savedAt);
-      const toRemove = new Set(sorted.slice(settings.autoClearChaptersKeep).map((c) => c.url));
-      chapters = chapters.filter((c) => c.novelSlug !== novelSlug || !toRemove.has(c.url));
+    // Auto-clear: keep only N newest chapters per novel
+    if (settings.autoClearChapters && settings.autoClearChaptersKeep > 0) {
+      const novelSlug = chapter.novelSlug;
+      const novelChapters = chapters.filter((c) => c.novelSlug === novelSlug);
+      if (novelChapters.length > settings.autoClearChaptersKeep) {
+        const sorted = novelChapters.sort((a, b) => b.savedAt - a.savedAt);
+        const toRemove = new Set(sorted.slice(settings.autoClearChaptersKeep).map((c) => c.url));
+        chapters = chapters.filter((c) => c.novelSlug !== novelSlug || !toRemove.has(c.url));
+      }
     }
-  }
 
-  // Auto-clear: keep only the current novel, remove all others
-  if (settings.autoClearNovels) {
-    chapters = chapters.filter((c) => c.novelSlug === chapter.novelSlug);
+    // Auto-clear: keep only the current novel, remove all others
+    if (settings.autoClearNovels) {
+      chapters = chapters.filter((c) => c.novelSlug === chapter.novelSlug);
+    }
   }
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(chapters));

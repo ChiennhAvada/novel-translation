@@ -1,3 +1,53 @@
+import { TOCChapter } from "./types";
+
+// Pricing per million tokens: [input, output] in USD
+// Models not listed here are considered free
+const MODEL_PRICING: Record<string, [number, number]> = {
+  "gpt-5.4": [2.00, 8.00],
+  "gpt-5.4-mini": [0.40, 1.60],
+  "gpt-5.4-nano": [0.10, 0.40],
+  "gpt-4.1": [2.00, 8.00],
+  "gpt-4.1-mini": [0.40, 1.60],
+  "gpt-4.1-nano": [0.10, 0.40],
+  "gpt-4o": [2.50, 10.00],
+  "gpt-4o-mini": [0.15, 0.60],
+  "claude-opus-4-6-20260313": [15.00, 75.00],
+  "claude-sonnet-4-6-20260313": [3.00, 15.00],
+  "claude-haiku-4-5-20251001": [0.80, 4.00],
+  "claude-sonnet-4-5-20250929": [3.00, 15.00],
+};
+
+function calculateCost(model: string, inputTokens: number, outputTokens: number): string | null {
+  const pricing = MODEL_PRICING[model];
+  if (!pricing) return null;
+  const cost = (inputTokens * pricing[0] + outputTokens * pricing[1]) / 1_000_000;
+  return `$${cost.toFixed(4)}`;
+}
+
+export interface FetchTOCResult {
+  chapters: TOCChapter[];
+  novelName: string;
+}
+
+export async function fetchTOC(
+  url: string,
+  signal?: AbortSignal
+): Promise<FetchTOCResult> {
+  const res = await fetch("/api/fetch-toc", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url }),
+    signal,
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || "Failed to fetch table of contents");
+  }
+
+  return res.json();
+}
+
 export interface FetchContentResult {
   text: string;
   title: string;
@@ -125,8 +175,10 @@ export async function simplifyText(
     result = result.replace(usageMatch[0], "");
     try {
       const usage = JSON.parse(usageMatch[1]);
+      const cost = calculateCost(model, usage.input, usage.output);
+      const costStr = cost ? ` | Cost: ${cost}` : " | [Free]";
       console.log(
-        `[Token Usage] Input: ${usage.input}, Output: ${usage.output}, Total: ${usage.input + usage.output}`
+        `[Token Usage] Input: ${usage.input}, Output: ${usage.output}, Total: ${usage.input + usage.output}${costStr}`
       );
     } catch {
       // ignore
