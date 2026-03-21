@@ -72,14 +72,15 @@ function getSystemPrompt(lang: string, autoLineBreak: boolean): string {
   return autoLineBreak ? base + LINE_BREAK_INSTRUCTION : base;
 }
 
-function getProvider(model: string): "openai" | "gemini" | "claude" {
+function getProvider(model: string): "openai" | "gemini" | "claude" | "openrouter" {
   if (model.startsWith("gemini")) return "gemini";
   if (model.startsWith("claude")) return "claude";
+  if (model.includes("/")) return "openrouter";
   return "openai";
 }
 
-async function streamOpenAI(apiKey: string, model: string, text: string, systemPrompt: string) {
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+async function streamOpenAI(apiKey: string, model: string, text: string, systemPrompt: string, baseUrl = "https://api.openai.com/v1") {
+  const res = await fetch(`${baseUrl}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -288,6 +289,9 @@ export async function POST(req: Request) {
         break;
       case "claude":
         stream = await streamClaude(apiKey, model, text, systemPrompt);
+        break;
+      case "openrouter":
+        stream = await streamOpenAI(apiKey, model, text, systemPrompt, "https://openrouter.ai/api/v1");
         break;
       default:
         stream = await streamOpenAI(apiKey, model || "gpt-4o", text, systemPrompt);

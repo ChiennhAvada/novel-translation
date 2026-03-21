@@ -13,6 +13,7 @@ const DEFAULT_SETTINGS: ReaderSettings = {
   openaiApiKey: "",
   geminiApiKey: "",
   claudeApiKey: "",
+  openrouterApiKey: "",
   aiModel: "gemini-3-flash-preview",
   customPrompt: "",
   appLang: "vi",

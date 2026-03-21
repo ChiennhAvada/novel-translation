@@ -18,8 +18,20 @@ export default function AISettingsPanel({ settings, textColor, t, onUpdate }: Pr
   };
 
   const provider = getProviderForModel(settings.aiModel);
-  const keyField = provider === "gemini" ? "geminiApiKey" : provider === "claude" ? "claudeApiKey" : "openaiApiKey";
-  const label = provider === "gemini" ? t.geminiApiKey : provider === "claude" ? t.claudeApiKey : t.openaiApiKey;
+  const keyFieldMap: Record<string, "openaiApiKey" | "geminiApiKey" | "claudeApiKey" | "openrouterApiKey"> = {
+    gemini: "geminiApiKey",
+    claude: "claudeApiKey",
+    openrouter: "openrouterApiKey",
+    openai: "openaiApiKey",
+  };
+  const labelMap: Record<string, string> = {
+    gemini: t.geminiApiKey,
+    claude: t.claudeApiKey,
+    openrouter: t.openrouterApiKey,
+    openai: t.openaiApiKey,
+  };
+  const keyField = keyFieldMap[provider] || "openaiApiKey";
+  const label = labelMap[provider] || t.openaiApiKey;
 
   return (
     <div

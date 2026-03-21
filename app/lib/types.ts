@@ -9,7 +9,7 @@ export interface SavedChapter {
   savedAt: number;
 }
 
-export type AIProvider = "openai" | "gemini" | "claude";
+export type AIProvider = "openai" | "gemini" | "claude" | "openrouter";
 
 export interface AIModelOption {
   provider: AIProvider;
@@ -50,6 +50,18 @@ export const AI_MODEL_OPTIONS: AIModelOption[] = [
       "claude-sonnet-4-5-20250929"
     ],
   },
+  {
+    provider: "openrouter",
+    label: "OpenRouter (Free)",
+    models: [
+      "z-ai/glm-4.5-air:free",
+      "qwen/qwen3-coder:free",
+      "qwen/qwen3-next-80b-a3b-instruct:free",
+      "stepfun/step-3.5-flash:free",
+      "nousresearch/hermes-3-llama-3.1-405b:free",
+      "meta-llama/llama-3.3-70b-instruct:free",
+    ],
+  },
 ];
 
 export type MassTranslateMode = "one-by-one" | "batch-together" | "batch-in-groups";
@@ -68,6 +80,7 @@ export interface ReaderSettings {
   openaiApiKey: string;
   geminiApiKey: string;
   claudeApiKey: string;
+  openrouterApiKey: string;
   aiModel: string;
   customPrompt: string;
   appLang: "en" | "vi";
@@ -81,6 +94,8 @@ export interface ReaderSettings {
 export function getProviderForModel(model: string): AIProvider {
   if (model.startsWith("gemini")) return "gemini";
   if (model.startsWith("claude")) return "claude";
+  // OpenRouter models have org/model:free format
+  if (model.includes("/")) return "openrouter";
   return "openai";
 }
 
@@ -89,6 +104,7 @@ export function getApiKeyForModel(settings: ReaderSettings): string {
   switch (provider) {
     case "gemini": return settings.geminiApiKey;
     case "claude": return settings.claudeApiKey;
+    case "openrouter": return settings.openrouterApiKey;
     default: return settings.openaiApiKey;
   }
 }

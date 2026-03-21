@@ -46,6 +46,7 @@ export default function Home() {
     openaiApiKey: "",
     geminiApiKey: "",
     claudeApiKey: "",
+    openrouterApiKey: "",
     aiModel: "gemini-3-flash-preview",
     customPrompt: "",
     appLang: "vi",

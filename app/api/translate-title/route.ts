@@ -1,6 +1,7 @@
-function getProvider(model: string): "openai" | "gemini" | "claude" {
+function getProvider(model: string): "openai" | "gemini" | "claude" | "openrouter" {
   if (model.startsWith("gemini")) return "gemini";
   if (model.startsWith("claude")) return "claude";
+  if (model.includes("/")) return "openrouter";
   return "openai";
 }
 
@@ -46,8 +47,11 @@ async function translate(apiKey: string, model: string, title: string, prompt: s
     return data.content?.[0]?.text?.trim() || title;
   }
 
-  // OpenAI
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  // OpenAI / OpenRouter (OpenAI-compatible)
+  const baseUrl = provider === "openrouter"
+    ? "https://openrouter.ai/api/v1"
+    : "https://api.openai.com/v1";
+  const res = await fetch(`${baseUrl}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
