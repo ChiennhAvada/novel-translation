@@ -55,6 +55,7 @@ export default function Home() {
     autoClearNovels: false,
     massTranslateMode: "one-by-one",
     massTranslateGroupSize: 3,
+    referenceLinks: "",
   });
   const [showScrollTop, setShowScrollTop] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
@@ -170,7 +171,8 @@ export default function Home() {
           settings.autoLineBreak,
           controller.signal,
           setSimplifiedText,
-          settings.customPrompt
+          settings.customPrompt,
+          settings.referenceLinks
         );
 
         // Translate title if Chinese (single API call for both titles)

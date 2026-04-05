@@ -142,12 +142,13 @@ export async function simplifyText(
   autoLineBreak?: boolean,
   signal?: AbortSignal,
   onChunk?: (accumulated: string) => void,
-  customPrompt?: string
+  customPrompt?: string,
+  referenceLinks?: string
 ): Promise<string> {
   const res = await fetch("/api/simplify", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, apiKey, model, lang: lang || "vi", autoLineBreak, customPrompt }),
+    body: JSON.stringify({ text, apiKey, model, lang: lang || "vi", autoLineBreak, customPrompt, referenceLinks }),
     signal,
   });
 

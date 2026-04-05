@@ -89,6 +89,7 @@ export interface ReaderSettings {
   autoClearNovels: boolean;
   massTranslateMode: MassTranslateMode;
   massTranslateGroupSize: number;
+  referenceLinks: string;
 }
 
 export function getProviderForModel(model: string): AIProvider {

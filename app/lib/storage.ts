@@ -22,6 +22,7 @@ const DEFAULT_SETTINGS: ReaderSettings = {
   autoClearNovels: false,
   massTranslateMode: "one-by-one",
   massTranslateGroupSize: 3,
+  referenceLinks: "",
 };
 
 // Extract novel slug from URL

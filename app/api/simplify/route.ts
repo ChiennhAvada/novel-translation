@@ -72,6 +72,44 @@ function getSystemPrompt(lang: string, autoLineBreak: boolean): string {
   return autoLineBreak ? base + LINE_BREAK_INSTRUCTION : base;
 }
 
+async function fetchReferenceContent(urls: string): Promise<string> {
+  const links = urls.split(",").map((u) => u.trim()).filter((u) => u.startsWith("http"));
+  if (links.length === 0) return "";
+
+  const results = await Promise.allSettled(
+    links.map(async (url) => {
+      const res = await fetch(url, {
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; NovelTranslator/1.0)" },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!res.ok) return "";
+      const html = await res.text();
+      // Strip HTML tags, scripts, styles to get plain text
+      const text = html
+        .replace(/<script[\s\S]*?<\/script>/gi, "")
+        .replace(/<style[\s\S]*?<\/style>/gi, "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      // Limit each page to ~3000 chars to avoid bloating the prompt
+      return text.slice(0, 3000);
+    })
+  );
+
+  const contents = results
+    .map((r, i) => {
+      if (r.status === "fulfilled" && r.value) {
+        return `[Reference from ${links[i]}]:\n${r.value}`;
+      }
+      return "";
+    })
+    .filter(Boolean);
+
+  return contents.length > 0
+    ? "\n\nTHÔNG TIN THAM KHẢO (dùng để tra cứu tên nhân vật, địa danh, thuật ngữ cho chính xác - KHÔNG dịch nội dung tham khảo này):\n" + contents.join("\n\n")
+    : "";
+}
+
 function getProvider(model: string): "openai" | "gemini" | "claude" | "openrouter" {
   if (model.startsWith("gemini")) return "gemini";
   if (model.startsWith("claude")) return "claude";
@@ -263,7 +301,7 @@ async function streamClaude(apiKey: string, model: string, text: string, systemP
 
 export async function POST(req: Request) {
   try {
-    const { text, apiKey, model, lang, autoLineBreak, customPrompt } = await req.json();
+    const { text, apiKey, model, lang, autoLineBreak, customPrompt, referenceLinks } = await req.json();
 
     if (!text || typeof text !== "string") {
       return Response.json({ error: "Missing text" }, { status: 400 });
@@ -280,6 +318,12 @@ export async function POST(req: Request) {
     let systemPrompt = getSystemPrompt(lang || "vi", !!autoLineBreak);
     if (customPrompt && typeof customPrompt === "string") {
       systemPrompt += "\n" + customPrompt.trim();
+    }
+    if (referenceLinks && typeof referenceLinks === "string") {
+      const refContent = await fetchReferenceContent(referenceLinks);
+      if (refContent) {
+        systemPrompt += refContent;
+      }
     }
     let stream: ReadableStream;
 

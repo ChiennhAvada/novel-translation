@@ -57,6 +57,9 @@ const translations = {
     chaptersFound: "chapters found",
     fetchingToc: "Fetching TOC...",
     massTranslateFetchingChapter: "Fetching",
+    referenceLinks: "Reference links",
+    referenceLinksPlaceholder: "Paste URLs separated by commas (e.g. wiki page with character names, glossary...)",
+    referenceLinksNote: "AI will fetch these pages for context (character names, places, terms...)",
     menu: "Menu",
   },
   vi: {
@@ -115,6 +118,9 @@ const translations = {
     chaptersFound: "chương tìm thấy",
     fetchingToc: "Đang tải mục lục...",
     massTranslateFetchingChapter: "Đang tải",
+    referenceLinks: "Link tham khảo",
+    referenceLinksPlaceholder: "Dán các URL cách nhau bởi dấu phẩy (VD: trang wiki tên nhân vật, bảng thuật ngữ...)",
+    referenceLinksNote: "AI sẽ đọc các trang này để lấy ngữ cảnh (tên nhân vật, địa danh, thuật ngữ...)",
     menu: "Menu",
   },
 } as const;

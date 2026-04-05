@@ -94,7 +94,8 @@ export default function MassTranslatePanel({ settings, textColor, t, onUpdate, o
             settings.autoLineBreak,
             signal,
             undefined,
-            settings.customPrompt
+            settings.customPrompt,
+            settings.referenceLinks
           );
           if (signal.aborted) break;
 
@@ -208,7 +209,8 @@ export default function MassTranslatePanel({ settings, textColor, t, onUpdate, o
             settings.autoLineBreak,
             signal,
             undefined,
-            batchPrompt
+            batchPrompt,
+            settings.referenceLinks
           );
 
           if (signal.aborted) break;
